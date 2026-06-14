@@ -20,8 +20,12 @@
 | `marketing-service` | 8089 | marketing_db | 营销中心（v1 优惠券） | - |
 | `dining-pos-service` | 8090 | dining_db | 餐饮收银 POS（桌台/台账/点单/沽清/结账） | 发 `DiningChecked` |
 | `supply-chain-service` | 8091 | supply_chain_db | 供应链（库存/BOM 自动核减） | 消费 `DiningChecked` |
-| `performance-service` | 8092 | performance_db | 演出/游船/游乐（场次/座位库存 + 手牌） | 消费 `PaymentSucceeded` |
-| `integration-tests` | - | - | 门票黄金路径端到端测试 | - |
+| `performance-service` | 8092 | performance_db | 演出/游船/游乐（场次/座位库存 + 手牌） | 消费 `PaymentSucceeded`，发 `WristbandConsumed` |
+| `reconciliation-service` | 8093 | reconciliation_db | 跨业态统一对账（资金归集 + 日汇总） | 消费 `PaymentSucceeded`/`RefundSucceeded`/`WalletConsumed`/`WristbandConsumed` |
+| `integration-tests` | - | - | 各业态黄金路径端到端测试 | - |
+
+> member-service 储值消费发 `WalletConsumed`；reconciliation-service 汇集全业态资金口径
+> （门票/酒店/演出经 payment，餐饮经会员储值，水乐园经手牌）做统一对账。
 
 > member-service 已扩展会员等级/积分/储值（13 文档），消费 `OrderPaid` 发放积分。
 > 跨业态事件主题 `payment.payment-succeeded` 由门票 order-service 与酒店 hotel-pms-service 各自按 order_id 认领。

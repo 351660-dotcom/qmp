@@ -13,3 +13,4 @@ CREATE DATABASE IF NOT EXISTS marketing_db           DEFAULT CHARACTER SET utf8m
 CREATE DATABASE IF NOT EXISTS dining_db              DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS supply_chain_db        DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS performance_db         DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS reconciliation_db      DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -3,15 +3,18 @@ package com.qmp.performance.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qmp.kernel.common.BizException;
 import com.qmp.kernel.context.TenantContext;
+import com.qmp.kernel.event.EventEnvelope;
 import com.qmp.performance.dto.IssueWristbandRequest;
 import com.qmp.performance.dto.WristbandView;
 import com.qmp.performance.entity.WristbandAccount;
 import com.qmp.performance.entity.WristbandLedger;
 import com.qmp.performance.error.PerformanceErrorCode;
+import com.qmp.performance.event.WristbandConsumedPayload;
 import com.qmp.performance.mapper.WristbandAccountMapper;
 import com.qmp.performance.mapper.WristbandLedgerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +29,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WristbandService {
 
+    private static final String TOPIC_WRISTBAND_CONSUMED = "performance.wristband-consumed";
+
     private final WristbandAccountMapper accountMapper;
     private final WristbandLedgerMapper ledgerMapper;
+    private final RocketMQTemplate rocketMQTemplate;
 
     @Transactional
     public WristbandView issue(IssueWristbandRequest request) {
@@ -77,6 +83,13 @@ public class WristbandService {
         }
         BigDecimal balanceAfter = getOrThrow(wristbandId).getBalance();
         insertLedger(wristbandId, amount.negate(), balanceAfter, "CONSUME", merchantId, sourceRef);
+        if (merchantId != null) {
+            WristbandConsumedPayload payload = WristbandConsumedPayload.builder()
+                    .wristbandId(wristbandId).merchantId(merchantId).amount(amount).sourceRef(sourceRef).build();
+            EventEnvelope<WristbandConsumedPayload> event =
+                    EventEnvelope.of("WristbandConsumed", TenantContext.get(), payload);
+            rocketMQTemplate.syncSendOrderly(TOPIC_WRISTBAND_CONSUMED, event, String.valueOf(wristbandId));
+        }
         return balanceAfter;
     }
 

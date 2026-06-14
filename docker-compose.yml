@@ -316,5 +316,24 @@ services:
       payment-service:
         condition: service_started
 
+  reconciliation-service:
+    build:
+      context: .
+      dockerfile: reconciliation-service/Dockerfile
+    container_name: scenic-reconciliation-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+    ports:
+      - "8093:8093"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
+
 volumes:
   mysql-data:

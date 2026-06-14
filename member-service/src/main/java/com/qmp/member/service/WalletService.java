@@ -3,13 +3,16 @@ package com.qmp.member.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qmp.kernel.common.BizException;
 import com.qmp.kernel.context.TenantContext;
+import com.qmp.kernel.event.EventEnvelope;
 import com.qmp.member.entity.MemberWallet;
 import com.qmp.member.entity.WalletLedger;
 import com.qmp.member.error.MemberErrorCode;
+import com.qmp.member.event.WalletConsumedPayload;
 import com.qmp.member.mapper.MemberWalletMapper;
 import com.qmp.member.mapper.WalletLedgerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +27,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WalletService {
 
+    private static final String TOPIC_WALLET_CONSUMED = "member.wallet-consumed";
+
     private final MemberWalletMapper walletMapper;
     private final WalletLedgerMapper walletLedgerMapper;
+    private final RocketMQTemplate rocketMQTemplate;
 
     @Transactional
     public BigDecimal recharge(Long userId, BigDecimal amount, String sourceRef) {
@@ -56,6 +62,7 @@ public class WalletService {
         }
         BigDecimal balanceAfter = walletMapper.selectById(userId).getBalance();
         insertLedger(TenantContext.get(), userId, amount.negate(), balanceAfter, "CONSUME", merchantId, sourceRef);
+        publishWalletConsumed(userId, merchantId, amount, sourceRef);
         log.info("储值消费: userId={}, -{}, balance={}, ref={}", userId, amount, balanceAfter, sourceRef);
         return balanceAfter;
     }
@@ -87,6 +94,17 @@ public class WalletService {
                 .eq(WalletLedger::getSourceRef, sourceRef)
                 .eq(WalletLedger::getType, type)
                 .last("LIMIT 1"));
+    }
+
+    private void publishWalletConsumed(Long userId, Long merchantId, BigDecimal amount, String sourceRef) {
+        if (merchantId == null) {
+            return; // 无商户归属（如非消费场景）不计入对账
+        }
+        WalletConsumedPayload payload = WalletConsumedPayload.builder()
+                .userId(userId).merchantId(merchantId).amount(amount).sourceRef(sourceRef).build();
+        EventEnvelope<WalletConsumedPayload> event =
+                EventEnvelope.of("WalletConsumed", TenantContext.get(), payload);
+        rocketMQTemplate.syncSendOrderly(TOPIC_WALLET_CONSUMED, event, String.valueOf(userId));
     }
 
     private void insertLedger(Long tenantId, Long userId, BigDecimal change, BigDecimal balanceAfter,

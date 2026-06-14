@@ -70,6 +70,7 @@ jobs:
           wait_http dining         http://localhost:8090/api/v1/dining/table-orders/0
           wait_http supply         http://localhost:8091/
           wait_http performance    http://localhost:8092/api/v1/performance/bookings/0
+          wait_http reconciliation "http://localhost:8093/api/v1/reconciliation/daily?date=2026-01-01"
 
       - name: Run golden-path integration test
         env:

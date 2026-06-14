@@ -1,17 +1,14 @@
-package com.qmp.payment.event;
+package com.qmp.reconciliation.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * {@code PaymentSucceeded} 事件 payload（见 09 文档八.2，topic={@code payment.payment-succeeded}）。
- */
-@Getter
-@Builder
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentSucceededPayload {
 
     @JsonProperty("order_id")
@@ -20,7 +17,6 @@ public class PaymentSucceededPayload {
     @JsonProperty("payment_id")
     private String paymentId;
 
-    /** 收款商户，供统一对账归集（④）。 */
     @JsonProperty("merchant_id")
     private Long merchantId;
 
