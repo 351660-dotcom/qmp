@@ -1,0 +1,20 @@
+# Maven
+target/
+*.iml
+
+# IDE
+.idea/
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Local env overrides
+.env
+
+# Local Claude Code settings
+.claude/

@@ -1,0 +1,206 @@
+name: scenic-saas
+
+services:
+  # ------------------------------------------------------------------
+  # 中间件（v1 最小集，见 ADR-010 / 09 文档）
+  # ------------------------------------------------------------------
+  mysql:
+    image: mysql:8.4
+    container_name: scenic-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: scenic-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.0
+    container_name: scenic-rocketmq-namesrv
+    restart: unless-stopped
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.0
+    container_name: scenic-rocketmq-broker
+    restart: unless-stopped
+    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/rocketmq-5.3.0/conf/broker.conf
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv:9876
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    depends_on:
+      - rocketmq-namesrv
+    volumes:
+      - ./docker/rocketmq/broker.conf:/home/rocketmq/rocketmq-5.3.0/conf/broker.conf:ro
+
+  # ------------------------------------------------------------------
+  # 门票全链路 7 个服务（各自独立 Spring Boot 应用，见各服务 CLAUDE.md）
+  # ------------------------------------------------------------------
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    container_name: scenic-product-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  pricing-service:
+    build:
+      context: .
+      dockerfile: pricing-service/Dockerfile
+    container_name: scenic-pricing-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  member-service:
+    build:
+      context: .
+      dockerfile: member-service/Dockerfile
+    container_name: scenic-member-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    container_name: scenic-inventory-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "8084:8084"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    container_name: scenic-payment-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
+
+  ticket-verification-service:
+    build:
+      context: .
+      dockerfile: ticket-verification-service/Dockerfile
+    container_name: scenic-ticket-verification-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+      PAYMENT_BASE_URL: http://payment-service:8085
+      INVENTORY_BASE_URL: http://inventory-service:8084
+    ports:
+      - "8086:8086"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: scenic-order-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+      PRODUCT_BASE_URL: http://product-service:8081
+      PRICING_BASE_URL: http://pricing-service:8082
+      MEMBER_BASE_URL: http://member-service:8083
+      INVENTORY_BASE_URL: http://inventory-service:8084
+      PAYMENT_BASE_URL: http://payment-service:8085
+      TICKET_VERIFICATION_BASE_URL: http://ticket-verification-service:8086
+    ports:
+      - "8087:8087"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
+      product-service:
+        condition: service_started
+      pricing-service:
+        condition: service_started
+      member-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      ticket-verification-service:
+        condition: service_started
+
+volumes:
+  mysql-data:

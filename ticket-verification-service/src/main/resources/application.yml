@@ -1,0 +1,36 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: ticket-verification-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/ticket_verification_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:localhost:9876}
+  producer:
+    group: ticket-verification-service-producer
+
+verification:
+  verify-code:
+    # v1 单一签名密钥；生产应按租户/景区下发独立密钥并轮换
+    secret: ${VERIFY_CODE_SECRET:scenic-saas-v1-verify-secret}
+  client:
+    payment-base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
+    inventory-base-url: ${INVENTORY_BASE_URL:http://localhost:8084}
+
+logging:
+  level:
+    com.qmp: INFO

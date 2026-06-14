@@ -1,0 +1,38 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/order_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:localhost:9876}
+  producer:
+    # order-service 仅消费事件，不发布；保留默认 producer group 供框架占位
+    group: order-service-producer
+
+order:
+  client:
+    product-base-url: ${PRODUCT_BASE_URL:http://localhost:8081}
+    pricing-base-url: ${PRICING_BASE_URL:http://localhost:8082}
+    member-base-url: ${MEMBER_BASE_URL:http://localhost:8083}
+    inventory-base-url: ${INVENTORY_BASE_URL:http://localhost:8084}
+    payment-base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
+    ticket-verification-base-url: ${TICKET_VERIFICATION_BASE_URL:http://localhost:8086}
+
+logging:
+  level:
+    com.qmp: INFO

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  # ------------------------------------------------------------------
+  # 构建 + 编译全模块（含集成测试源码，不启动依赖中间件）
+  # ------------------------------------------------------------------
+  build:
+    name: build (mvn package)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # 不带 RUN_GOLDEN_PATH，集成测试由 @EnabledIfEnvironmentVariable 自动跳过
+      - name: Build all modules
+        run: mvn -B -ntp package
+
+  # ------------------------------------------------------------------
+  # 门票黄金路径端到端：docker compose 拉起整套服务后跑集成测试
+  # ------------------------------------------------------------------
+  golden-path:
+    name: golden-path (e2e)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Start full stack (build images + up)
+        run: docker compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          set -e
+          wait_http() {
+            local name="$1" url="$2" tries=0
+            echo "waiting for $name ($url) ..."
+            until [ "$(curl -s -o /dev/null -w '%{http_code}' -H 'X-Tenant-Id: 1001' "$url")" != "000" ]; do
+              tries=$((tries+1))
+              if [ "$tries" -ge 120 ]; then
+                echo "::error::$name not ready after 240s"; exit 1
+              fi
+              sleep 2
+            done
+            echo "$name is up"
+          }
+          wait_http product       http://localhost:8081/api/v1/skus/1001
+          wait_http pricing        "http://localhost:8082/api/v1/price?sku_id=1001&sale_date=2026-07-01&is_member=false"
+          wait_http member         http://localhost:8083/api/v1/members/123/status
+          wait_http inventory      "http://localhost:8084/api/v1/inventory/availability?sku_id=1001&sale_date=2026-07-01&time_slot_id=1"
+          wait_http payment        http://localhost:8085/
+          wait_http ticket-verify  http://localhost:8086/
+          wait_http order          http://localhost:8087/api/v1/orders/0
+
+      - name: Run golden-path integration test
+        env:
+          RUN_GOLDEN_PATH: "true"
+        run: mvn -B -ntp -pl integration-tests test
+
+      - name: Dump compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 300
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
