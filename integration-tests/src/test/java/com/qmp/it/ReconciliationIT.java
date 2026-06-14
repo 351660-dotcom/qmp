@@ -47,8 +47,10 @@ class ReconciliationIT extends E2eSupport {
         JsonNode band = post(PERFORMANCE_BASE + "/api/v1/performance/wristbands",
                 "{\"scenic_id\":%d,\"user_id\":123,\"initial_amount\":50.00}".formatted(SCENIC_ID));
         long wristbandId = band.get("wristband_id").asLong();
+        // source_ref 是手牌消费的全局幂等键 (source_ref, type)，必须每次运行唯一，
+        // 否则重复运行会命中幂等提前返回、不再发布 WristbandConsumed，导致对账收不到本轮商户的入账。
         post(PERFORMANCE_BASE + "/api/v1/performance/wristbands/" + wristbandId + "/consume",
-                "{\"amount\":30.00,\"merchant_id\":%d,\"source_ref\":\"RECON-WB-IT-1\"}".formatted(merchantId));
+                "{\"amount\":30.00,\"merchant_id\":%d,\"source_ref\":\"RECON-WB-IT-%d\"}".formatted(merchantId, merchantId));
 
         // 3) 等待对账归集：日汇总 in_total=130，by_source 含 PAYMENT(100)+WRISTBAND(30)
         String reconBase = "http://localhost:8093/api/v1/reconciliation";

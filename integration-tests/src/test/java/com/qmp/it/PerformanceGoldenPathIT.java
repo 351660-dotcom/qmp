@@ -62,10 +62,11 @@ class PerformanceGoldenPathIT extends E2eSupport {
         long wristbandId = band.get("wristband_id").asLong();
         assertThat(band.get("balance").asDouble()).isEqualTo(100.00);
 
+        // source_ref 用本轮唯一的 wristbandId，避免重复运行命中全局幂等键 (source_ref, type) 而短路扣减。
         JsonNode consume = post(PERFORMANCE_BASE + "/api/v1/performance/wristbands/" + wristbandId + "/consume",
                 """
-                {"amount":30.00,"merchant_id":%d,"source_ref":"PERF-WB-IT-1"}
-                """.formatted(MERCHANT_ID));
+                {"amount":30.00,"merchant_id":%d,"source_ref":"PERF-WB-IT-%d"}
+                """.formatted(MERCHANT_ID, wristbandId));
         assertThat(consume.get("balance").asDouble()).isEqualTo(70.00);
     }
 }
