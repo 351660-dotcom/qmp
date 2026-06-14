@@ -48,6 +48,8 @@ services:
     command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/rocketmq-5.3.0/conf/broker.conf
     environment:
       - NAMESRV_ADDR=rocketmq-namesrv:9876
+      # 限制 broker 堆，避免默认大堆在本地多服务环境内存压力下被反复重启（曾累计重启 20+ 次）
+      - JAVA_OPT_EXT=-server -Xms1g -Xmx1g -Xmn512m
     ports:
       - "10909:10909"
       - "10911:10911"
@@ -228,6 +230,8 @@ services:
       INVENTORY_BASE_URL: http://inventory-service:8084
       PAYMENT_BASE_URL: http://payment-service:8085
       TICKET_VERIFICATION_BASE_URL: http://ticket-verification-service:8086
+      # 本地/测试栈缩短超时关单扫描间隔（生产默认 60s）
+      ORDER_CANCEL_JOB_FIXED_DELAY_MS: "5000"
     ports:
       - "8087:8087"
     healthcheck:
