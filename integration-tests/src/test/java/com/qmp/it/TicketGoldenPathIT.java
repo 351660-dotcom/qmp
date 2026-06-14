@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.function.BooleanSupplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,8 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>默认跳过；CI 在 compose 启动并就绪后设置 {@code RUN_GOLDEN_PATH=true} 触发。
  * 服务地址 / MySQL 地址可经环境变量覆盖，默认指向 localhost 暴露端口。</p>
  *
- * <p><b>时效性说明</b>：种子游玩日期为 {@code 2026-07-01}，默认退改规则 cutoff 24h，
- * 故退票步骤要求运行时间早于 2026-06-30。详见 integration-tests 说明与各服务 CLAUDE.md。</p>
+ * <p><b>时效性</b>：游玩日期取 {@code now()+30 天} 并在用例内经 admin 接口自助铺价格/库存，
+ * 退改规则 cutoff 24h 恒满足，故本用例与运行日期无关、可长期重复运行（不再依赖 2026-07-01 种子）。</p>
  */
 @EnabledIfEnvironmentVariable(named = "RUN_GOLDEN_PATH", matches = "true")
 @DisplayName("门票黄金路径：下单→预占→支付→出票→核验→退票→释放库存")
@@ -41,10 +42,14 @@ class TicketGoldenPathIT {
 
     private static final String TENANT_ID = "1001";
     private static final long SKU_ID = 1001L;
-    private static final String SALE_DATE = "2026-07-01";
+    private static final long SCENIC_ID = 3001L;
+    // 动态未来日期：远超退改 cutoff（24h），使退票步骤与运行时钟无关，可长期重复运行
+    private static final String SALE_DATE = LocalDate.now().plusDays(30).toString();
+    private static final String ADMIN_TOKEN = env("ADMIN_API_TOKEN", "scenic-admin-dev-token");
 
     private static final String ORDER_BASE = env("ORDER_BASE_URL", "http://localhost:8087");
     private static final String PAYMENT_BASE = env("PAYMENT_BASE_URL", "http://localhost:8085");
+    private static final String PRICING_BASE = env("PRICING_BASE_URL", "http://localhost:8082");
     private static final String INVENTORY_BASE = env("INVENTORY_BASE_URL", "http://localhost:8084");
     private static final String TICKET_BASE = env("TICKET_VERIFICATION_BASE_URL", "http://localhost:8086");
 
@@ -60,6 +65,9 @@ class TicketGoldenPathIT {
     void goldenPath() throws Exception {
         // 0) 等待 order-service 就绪（compose 健康检查后仍需等待应用 + Flyway 完成）
         awaitUntil(Duration.ofSeconds(180), () -> serviceUp(ORDER_BASE + "/api/v1/orders/0"));
+
+        // 0.1) 经 admin 接口自助铺该游玩日期的价格与库存（替代固定种子日期，使用例与运行日期无关）
+        provisionPriceAndInventory();
 
         // 1) 创建订单：两条明细（场次 1 / 场次 2，各 1 张），会员价 88 × 2 = 176
         String createBody = """
@@ -134,6 +142,36 @@ class TicketGoldenPathIT {
 
         // 订单：itemA 已核验 / itemB 已退票（非核验），未达「全部核验」，保持 PAID（见 order-service CLAUDE.md 决策 5）
         assertThat(orderStatus(orderId)).isEqualTo("PAID");
+    }
+
+    // ------------------------------------------------------------------
+    // 造数：经 admin 接口铺该游玩日期的价格 + 两个场次库存桶（幂等，可重复运行）
+    // ------------------------------------------------------------------
+    private void provisionPriceAndInventory() throws Exception {
+        // 会员价 88（总额断言 88×2=176）+ 门市价 120
+        adminSend("PUT", PRICING_BASE + "/admin/v1/prices",
+                "{\"sku_id\":%d,\"sale_date\":\"%s\",\"price_type\":\"MEMBER\",\"price\":88.00}".formatted(SKU_ID, SALE_DATE));
+        adminSend("PUT", PRICING_BASE + "/admin/v1/prices",
+                "{\"sku_id\":%d,\"sale_date\":\"%s\",\"price_type\":\"RETAIL\",\"price\":120.00}".formatted(SKU_ID, SALE_DATE));
+        // 两个场次（time_slot 1/2）各铺库存桶
+        for (int slot = 1; slot <= 2; slot++) {
+            adminSend("POST", INVENTORY_BASE + "/admin/v1/buckets",
+                    "{\"sku_id\":%d,\"sale_date\":\"%s\",\"time_slot_id\":%d,\"scenic_id\":%d,\"total_quota\":100}"
+                            .formatted(SKU_ID, SALE_DATE, slot, SCENIC_ID));
+        }
+    }
+
+    /** 带管理员令牌的 admin 调用（PUT/POST），断言 200 + code=OK。 */
+    private void adminSend(String method, String url, String body) throws Exception {
+        HttpRequest.BodyPublisher pub = HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8);
+        HttpRequest req = HttpRequest.newBuilder(URI.create(url))
+                .header("X-Tenant-Id", TENANT_ID)
+                .header("X-Admin-Token", ADMIN_TOKEN)
+                .header("Content-Type", "application/json")
+                .method(method, pub).build();
+        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+        assertThat(resp.statusCode()).as("%s %s -> %s", method, url, resp.body()).isEqualTo(200);
+        assertThat(om.readTree(resp.body()).get("code").asText()).as("%s %s code", method, url).isEqualTo("OK");
     }
 
     // ------------------------------------------------------------------
