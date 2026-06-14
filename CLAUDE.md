@@ -54,6 +54,13 @@ curl -H 'X-Tenant-Id: 1001' http://localhost:8081/api/v1/skus/1001
 数据库初始化见 `docker/mysql/init/01-init-databases.sql`，各服务 Flyway 自动建表 + 种子数据
 （黄金路径示例：tenant 1001 / scenic 3001 / merchant 2001 / sku 1001 / sale_date 2026-07-01）。
 
+## 后台管理（Admin API）
+
+主数据可由后台维护（替代种子 SQL），统一前缀 `/admin/v1`，需带 `X-Tenant-Id` 头：
+product（商品/票种/上下架）、pricing（价格 upsert）、inventory（库存桶 upsert）、order（订单列表）。
+完整清单与造数示例见 [docs/后台管理接口.md](docs/后台管理接口.md)。
+v1 暂未接管理员鉴权（ADR-011 后续补），生产应置于网关后并加鉴权。
+
 ## 测试
 
 - 端到端黄金路径：`integration-tests` 模块 `TicketGoldenPathIT`（默认跳过，

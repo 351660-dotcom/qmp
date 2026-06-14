@@ -8,7 +8,9 @@ import com.qmp.kernel.common.ErrorCode;
 public enum ProductErrorCode implements ErrorCode {
 
     SKU_NOT_FOUND(404, "PRODUCT_SKU_NOT_FOUND", "票种不存在"),
-    SKU_NOT_ON_SALE(409, "PRODUCT_SKU_NOT_ON_SALE", "票种未上架");
+    SKU_NOT_ON_SALE(409, "PRODUCT_SKU_NOT_ON_SALE", "票种未上架"),
+    PRODUCT_NOT_FOUND(404, "PRODUCT_NOT_FOUND", "门票商品不存在"),
+    INVALID_STATUS(400, "PRODUCT_INVALID_STATUS", "非法的商品状态");
 
     private final int httpStatus;
     private final String code;

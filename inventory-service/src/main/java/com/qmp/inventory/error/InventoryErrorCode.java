@@ -10,7 +10,8 @@ public enum InventoryErrorCode implements ErrorCode {
     BUCKET_NOT_FOUND(404, "INVENTORY_BUCKET_NOT_FOUND", "未找到对应的库存配置"),
     INSUFFICIENT_STOCK(409, "INVENTORY_INSUFFICIENT_STOCK", "库存不足"),
     RESERVATION_NOT_FOUND(404, "INVENTORY_RESERVATION_NOT_FOUND", "预占记录不存在"),
-    RESERVATION_INVALID_STATE(409, "INVENTORY_RESERVATION_INVALID_STATE", "预占记录状态不允许该操作");
+    RESERVATION_INVALID_STATE(409, "INVENTORY_RESERVATION_INVALID_STATE", "预占记录状态不允许该操作"),
+    INVALID_QUOTA(400, "INVENTORY_INVALID_QUOTA", "总配额不得小于已售+已锁定数量");
 
     private final int httpStatus;
     private final String code;
