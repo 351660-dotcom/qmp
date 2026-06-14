@@ -195,6 +195,8 @@ services:
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PAYMENT_BASE_URL: http://payment-service:8085
       INVENTORY_BASE_URL: http://inventory-service:8084
+      # 本地/测试栈缩短凭证过期扫描间隔（生产默认 60s）
+      VERIFICATION_EXPIRE_JOB_FIXED_DELAY_MS: "5000"
     ports:
       - "8086:8086"
     healthcheck:

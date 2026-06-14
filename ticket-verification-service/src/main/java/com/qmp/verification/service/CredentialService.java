@@ -1,6 +1,7 @@
 package com.qmp.verification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -295,5 +296,31 @@ public class CredentialService {
     /** 由消费侧定位凭证对应的 order_item_id（= inventory reservation_id）。 */
     public TicketCredential findById(Long credentialId) {
         return credentialMapper.selectById(credentialId);
+    }
+
+    // ------------------------------------------------------------------
+    // 凭证过期（UNUSED -> EXPIRED）：游玩日已过仍未核销的票按 no-show 作废
+    // ------------------------------------------------------------------
+    /** 扫描当前租户下游玩日已过（sale_date < today）且仍 UNUSED 的凭证（供 ExpireCredentialJob 调用）。 */
+    public List<TicketCredential> findExpirableCredentials(LocalDate today) {
+        return credentialMapper.selectList(new LambdaQueryWrapper<TicketCredential>()
+                .eq(TicketCredential::getStatus, "UNUSED")
+                .lt(TicketCredential::getSaleDate, today));
+    }
+
+    /**
+     * 将一张过期未核销的凭证置为 EXPIRED（no-show：不退款、不释放库存——票款已确认收入）。
+     * 用条件更新 {@code UNUSED -> EXPIRED} 保证与并发核验/退票互斥与幂等（命中 0 行即跳过）。
+     */
+    @Transactional
+    public boolean expireCredential(Long credentialId) {
+        int updated = credentialMapper.update(null, new LambdaUpdateWrapper<TicketCredential>()
+                .eq(TicketCredential::getCredentialId, credentialId)
+                .eq(TicketCredential::getStatus, "UNUSED")
+                .set(TicketCredential::getStatus, "EXPIRED"));
+        if (updated > 0) {
+            log.info("凭证过期作废: credentialId={}", credentialId);
+        }
+        return updated > 0;
     }
 }

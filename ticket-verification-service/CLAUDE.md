@@ -31,7 +31,7 @@
 
 `UNUSED` →(核验)→ `VERIFIED`（终态）
 `UNUSED` →(申请退票)→ `REFUNDING` →(RefundSucceeded)→ `REFUNDED`（终态）
-`UNUSED` →(过期)→ `EXPIRED`（终态，v1 暂无过期任务，留待补齐）
+`UNUSED` →(过期)→ `EXPIRED`（终态，由 `ExpireCredentialJob` 扫描 `sale_date < today` 仍 UNUSED 的凭证置位，no-show 语义：不退款、不释放库存）
 `VERIFIED` → `VOIDED`（人工误核销撤销，v1 不实现入口）
 
 ## verify_code 设计（07 文档 2.3「签名串，支持离线验签」）

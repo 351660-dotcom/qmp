@@ -30,6 +30,10 @@ verification:
   client:
     payment-base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
     inventory-base-url: ${INVENTORY_BASE_URL:http://localhost:8084}
+  # 凭证过期任务：扫描 sale_date < today 仍 UNUSED 的凭证，置 EXPIRED（no-show）
+  expire-job:
+    fixed-delay-ms: ${VERIFICATION_EXPIRE_JOB_FIXED_DELAY_MS:60000}
+    tenant-ids: ${VERIFICATION_EXPIRE_JOB_TENANT_IDS:1001}
 
 logging:
   level:
