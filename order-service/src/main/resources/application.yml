@@ -32,6 +32,10 @@ order:
     inventory-base-url: ${INVENTORY_BASE_URL:http://localhost:8084}
     payment-base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
     ticket-verification-base-url: ${TICKET_VERIFICATION_BASE_URL:http://localhost:8086}
+  # 超时关单任务：扫描 PENDING_PAYMENT 且超过 pay_expire_at 的订单，释放预占并置 CANCELLED
+  cancel-job:
+    fixed-delay-ms: ${ORDER_CANCEL_JOB_FIXED_DELAY_MS:60000}
+    tenant-ids: ${ORDER_CANCEL_JOB_TENANT_IDS:1001}
 
 logging:
   level:

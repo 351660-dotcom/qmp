@@ -128,6 +128,15 @@ abstract class E2eSupport {
         }
     }
 
+    /** 执行 UPDATE/DELETE 等更新语句（测试造数/构造边界态用，不经业务接口），返回影响行数。 */
+    protected int execute(String sql) {
+        try (Connection c = conn(); PreparedStatement ps = c.prepareStatement(sql)) {
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Connection conn() throws Exception {
         return DriverManager.getConnection("jdbc:mysql://" + MYSQL_HOST + ":" + MYSQL_PORT
                 + "/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", MYSQL_USER, MYSQL_PASSWORD);

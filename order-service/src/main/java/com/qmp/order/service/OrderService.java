@@ -168,6 +168,10 @@ public class OrderService {
         if (!"PENDING_PAYMENT".equals(order.getStatus())) {
             throw new BizException(OrderErrorCode.ORDER_INVALID_STATE);
         }
+        // 超时关单任务可能尚未扫到，但已过支付截止时间的订单不允许再发起支付（与关单任务最终一致）
+        if (order.getPayExpireAt() != null && order.getPayExpireAt().isBefore(LocalDateTime.now())) {
+            throw new BizException(OrderErrorCode.ORDER_PAY_EXPIRED);
+        }
         PaymentClient.PaymentView payment = paymentClient.createPayment(
                 orderId, order.getMerchantId(), order.getTotalAmount(), channel);
 
@@ -264,6 +268,38 @@ public class OrderService {
             tradeOrderMapper.updateById(order);
             log.info("订单全部核销，置为 CLOSED: orderId={}", order.getOrderId());
         }
+    }
+
+    // ------------------------------------------------------------------
+    // 超时关单（PENDING_PAYMENT 且超过支付截止时间）：释放预占 + 置 CANCELLED
+    // ------------------------------------------------------------------
+    /** 扫描当前租户下已过支付截止时间且仍待支付的订单（供 CancelExpiredOrderJob 调用）。 */
+    public List<TradeOrder> findExpiredPendingOrders(LocalDateTime now) {
+        return tradeOrderMapper.selectList(new LambdaQueryWrapper<TradeOrder>()
+                .eq(TradeOrder::getStatus, "PENDING_PAYMENT")
+                .lt(TradeOrder::getPayExpireAt, now));
+    }
+
+    /**
+     * 关闭一笔超时未支付的订单：best-effort 释放各明细预占（幂等，库存侧可能已自行 EXPIRED），
+     * 再将订单置 CANCELLED。重读校验状态 + 乐观锁（@Version）防止与支付成功并发误关。
+     */
+    @Transactional
+    public void cancelExpiredOrder(Long orderId) {
+        TradeOrder order = tradeOrderMapper.selectById(orderId);
+        if (order == null || !"PENDING_PAYMENT".equals(order.getStatus())) {
+            return; // 已被支付/已关闭，幂等跳过
+        }
+        for (OrderItem item : listItems(orderId)) {
+            try {
+                inventoryClient.releaseReservation(item.getOrderItemId());
+            } catch (Exception e) {
+                log.error("超时关单释放预占失败（留待库存超时任务/对账兜底）: orderItemId={}", item.getOrderItemId(), e);
+            }
+        }
+        order.setStatus("CANCELLED");
+        tradeOrderMapper.updateById(order);
+        log.info("订单超时未支付，已关闭: orderId={}", orderId);
     }
 
     // ------------------------------------------------------------------
