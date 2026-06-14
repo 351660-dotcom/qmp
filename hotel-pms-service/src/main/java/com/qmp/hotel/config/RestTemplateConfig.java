@@ -1,4 +1,4 @@
-package com.qmp.order.config;
+package com.qmp.hotel.config;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 /**
- * 编排下游服务（product/pricing/member/inventory/payment/ticket-verification）的 {@link RestTemplate}。
+ * 同步调用 payment-service 的 {@link RestTemplate}。
  */
 @Configuration
 public class RestTemplateConfig {

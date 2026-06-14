@@ -1,7 +1,7 @@
-package com.qmp.payment.entity;
+package com.qmp.hotel.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -11,32 +11,32 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 支付单（10 文档 8.1 {@code payment_order}）。一个订单仅一个有效支付单（{@code uk_order}）。
+ * 房型（11 文档 1.1 RoomType，对应门票域的 TicketSku）。
+ * {@code sku_id} 与门票 SKU 同一序列，房晚库存桶以此为关联键。
  */
 @Data
-@TableName("payment_order")
-public class PaymentOrder {
+@TableName("room_type")
+public class RoomType {
 
-    @TableId(type = IdType.INPUT)
-    private String paymentId;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long roomTypeId;
 
     private Long tenantId;
 
+    private Long scenicId;
+
     private Long merchantId;
 
-    private Long orderId;
+    /** 库存桶关联键（与门票 SKU 同序列）。 */
+    private Long skuId;
 
-    private BigDecimal amount;
+    private String name;
 
-    /** WECHAT/ALIPAY */
-    private String channel;
-
-    /** CREATED/PAID/CLOSED */
+    /** DRAFT/ON_SALE/OFF_SALE。 */
     private String status;
 
-    private String channelTradeNo;
-
-    private LocalDateTime paidAt;
+    /** v1 房晚基准价（未接价格日历/连住价，见 CLAUDE.md）。 */
+    private BigDecimal basePrice;
 
     @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;

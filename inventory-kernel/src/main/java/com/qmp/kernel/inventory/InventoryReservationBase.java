@@ -1,6 +1,7 @@
 package com.qmp.kernel.inventory;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
@@ -31,10 +32,10 @@ public abstract class InventoryReservationBase {
     private LocalDateTime holdExpireAt;
 
     /** 由 MySQL {@code DEFAULT CURRENT_TIMESTAMP} 填充，应用层不写入。 */
-    @TableField(value = "created_at", insertable = false, updatable = false)
+    @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;
 
     /** 由 MySQL {@code DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP} 填充，应用层不写入。 */
-    @TableField(value = "updated_at", insertable = false, updatable = false)
+    @TableField(value = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime updatedAt;
 }

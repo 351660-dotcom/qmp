@@ -1,5 +1,6 @@
 package com.qmp.member.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -23,9 +24,9 @@ public class MemberAccount {
 
     private LocalDateTime memberSince;
 
-    @TableField(value = "created_at", insertable = false, updatable = false)
+    @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;
 
-    @TableField(value = "updated_at", insertable = false, updatable = false)
+    @TableField(value = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime updatedAt;
 }

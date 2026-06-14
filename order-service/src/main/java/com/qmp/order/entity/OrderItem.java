@@ -1,6 +1,7 @@
 package com.qmp.order.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -47,6 +48,6 @@ public class OrderItem {
     /** v1 扩展：已核销凭证数，消费 TicketVerified 时自增；= quantity 视为该明细全部核销。 */
     private Integer verifiedCount;
 
-    @TableField(value = "created_at", insertable = false, updatable = false)
+    @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;
 }

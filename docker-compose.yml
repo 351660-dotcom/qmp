@@ -202,5 +202,29 @@ services:
       ticket-verification-service:
         condition: service_started
 
+  # ------------------------------------------------------------------
+  # 其它业态链路（ADR-025：独立建表/建库，复用 inventory-kernel）
+  # ------------------------------------------------------------------
+  hotel-pms-service:
+    build:
+      context: .
+      dockerfile: hotel-pms-service/Dockerfile
+    container_name: scenic-hotel-pms-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+      PAYMENT_BASE_URL: http://payment-service:8085
+    ports:
+      - "8088:8088"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
+      payment-service:
+        condition: service_started
+
 volumes:
   mysql-data:

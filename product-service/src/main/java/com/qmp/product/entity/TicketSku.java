@@ -1,6 +1,7 @@
 package com.qmp.product.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -30,9 +31,9 @@ public class TicketSku {
     /** JSON 数组，如 ["09:00-11:00","11:00-13:00"]，无分时预约时为 null。 */
     private String timeSlotDefinitions;
 
-    @TableField(value = "created_at", insertable = false, updatable = false)
+    @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;
 
-    @TableField(value = "updated_at", insertable = false, updatable = false)
+    @TableField(value = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime updatedAt;
 }
