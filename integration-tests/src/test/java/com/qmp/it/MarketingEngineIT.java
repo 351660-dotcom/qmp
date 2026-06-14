@@ -44,12 +44,11 @@ class MarketingEngineIT extends E2eSupport {
     void seckillSnapAndSoldOut() {
         awaitServiceUp(MARKETING_BASE + "/api/v1/coupons?user_id=0");
         long skuId = uniqueId();
-        LocalDateTime now = LocalDateTime.now();
 
-        // 建秒杀活动（ACTIVE，时间窗覆盖现在）+ 仅 1 个名额
+        // 建秒杀活动（ACTIVE，超宽时间窗规避容器/宿主时区差）+ 仅 1 个名额
         JsonNode act = post(MARKETING_BASE + "/admin/v1/seckill-activities", """
-                {"sku_id":%d,"seckill_price":9.90,"start_time":"%s","end_time":"%s","status":"ACTIVE"}
-                """.formatted(skuId, now.minusMinutes(1), now.plusDays(1)));
+                {"sku_id":%d,"seckill_price":9.90,"start_time":"2020-01-01T00:00:00","end_time":"2099-01-01T00:00:00","status":"ACTIVE"}
+                """.formatted(skuId));
         long activityId = act.get("activity_id").asLong();
         post(MARKETING_BASE + "/admin/v1/seckill-buckets", """
                 {"activity_id":%d,"sku_id":%d,"total_quota":1}

@@ -23,14 +23,14 @@ import org.springframework.core.Ordered;
 public class KernelAutoConfiguration {
 
     @Bean
-    public FilterRegistrationBean<RequestContextFilter> requestContextFilter() {
+    public FilterRegistrationBean<RequestContextFilter> kernelRequestContextFilterRegistration() {
         FilterRegistrationBean<RequestContextFilter> registration = new FilterRegistrationBean<>(new RequestContextFilter());
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;
     }
 
     @Bean
-    public FilterRegistrationBean<AdminAuthFilter> adminAuthFilter(
+    public FilterRegistrationBean<AdminAuthFilter> kernelAdminAuthFilterRegistration(
             @Value("${admin.api.token:}") String adminApiToken) {
         FilterRegistrationBean<AdminAuthFilter> registration =
                 new FilterRegistrationBean<>(new AdminAuthFilter(adminApiToken));
