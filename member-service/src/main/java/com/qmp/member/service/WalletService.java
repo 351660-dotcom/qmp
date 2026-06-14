@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WalletService {
 
-    private static final String TOPIC_WALLET_CONSUMED = "member.wallet-consumed";
+    private static final String TOPIC_WALLET_CONSUMED = "member_wallet-consumed";
 
     private final MemberWalletMapper walletMapper;
     private final WalletLedgerMapper walletLedgerMapper;

@@ -7,7 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * 消费侧 {@code OrderPaid} payload（topic={@code order.order-paid}，由 order-service 发布）。
+ * 消费侧 {@code OrderPaid} payload（topic={@code order_order-paid}，由 order-service 发布）。
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

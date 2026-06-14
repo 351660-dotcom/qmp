@@ -49,7 +49,7 @@ public class OrderService {
     private static final String DEFAULT_REFUND_POLICY =
             "{\"type\":\"TIERED\",\"cutoff_hours\":24,\"refund_ratio\":0.8}";
     private static final int PAY_EXPIRE_MINUTES = 15;
-    private static final String TOPIC_ORDER_PAID = "order.order-paid";
+    private static final String TOPIC_ORDER_PAID = "order_order-paid";
 
     private final TradeOrderMapper tradeOrderMapper;
     private final OrderItemMapper orderItemMapper;

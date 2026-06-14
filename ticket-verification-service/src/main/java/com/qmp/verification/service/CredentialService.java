@@ -48,7 +48,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CredentialService {
 
-    private static final String TOPIC_TICKET_VERIFIED = "ticket-verification.ticket-verified";
+    private static final String TOPIC_TICKET_VERIFIED = "ticket-verification_ticket-verified";
 
     private final TicketCredentialMapper credentialMapper;
     private final VerificationRecordMapper verificationRecordMapper;

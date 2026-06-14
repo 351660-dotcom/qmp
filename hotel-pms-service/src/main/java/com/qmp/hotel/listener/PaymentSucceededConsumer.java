@@ -14,7 +14,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
 /**
- * 消费 {@code PaymentSucceeded}（topic={@code payment.payment-succeeded}）：
+ * 消费 {@code PaymentSucceeded}（topic={@code payment_payment-succeeded}）：
  * 若 order_id 对应酒店预订单，则确认连住预占并置预订单 CONFIRMED。
  *
  * <p>该主题被门票 order-service 与酒店 hotel-pms-service 同时订阅（不同 consumer_group），
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "payment.payment-succeeded",
+        topic = "payment_payment-succeeded",
         consumerGroup = PaymentSucceededConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class PaymentSucceededConsumer implements RocketMQListener<String> {

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = "performance.wristband-consumed",
+@RocketMQMessageListener(topic = "performance_wristband-consumed",
         consumerGroup = WristbandReconConsumer.GROUP, consumeMode = ConsumeMode.ORDERLY)
 public class WristbandReconConsumer implements RocketMQListener<String> {
 

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
- * 消费 {@code RefundSucceeded}（topic={@code payment.refund-succeeded}）：
+ * 消费 {@code RefundSucceeded}（topic={@code payment_refund-succeeded}）：
  * 据 credential_id 定位凭证 → 释放对应库存预占（reservation_id = order_item_id）→ 凭证置为终态 REFUNDED。
  *
  * <p>对应 09 文档八.2「RefundSucceeded → 若退款对应凭证在可释放窗口内，调用 inventory.ReleaseReservation」。
@@ -35,7 +35,7 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "payment.refund-succeeded",
+        topic = "payment_refund-succeeded",
         consumerGroup = RefundSucceededConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class RefundSucceededConsumer implements RocketMQListener<String> {

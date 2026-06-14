@@ -7,7 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * 消费侧的 {@code RefundSucceeded} 事件 payload（topic={@code payment.refund-succeeded}，
+ * 消费侧的 {@code RefundSucceeded} 事件 payload（topic={@code payment_refund-succeeded}，
  * 由 payment-service 发布，见其 RefundSucceededPayload）。本服务据 {@code credential_id}
  * 定位凭证并联动释放库存。
  */

@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * 消费侧 {@code PaymentSucceeded} payload（topic={@code payment.payment-succeeded}）。
+ * 消费侧 {@code PaymentSucceeded} payload（topic={@code payment_payment-succeeded}）。
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

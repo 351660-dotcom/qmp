@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "payment.payment-succeeded",
+        topic = "payment_payment-succeeded",
         consumerGroup = PaymentSucceededConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class PaymentSucceededConsumer implements RocketMQListener<String> {

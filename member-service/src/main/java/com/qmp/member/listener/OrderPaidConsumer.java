@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 /**
- * 消费 {@code OrderPaid}（topic={@code order.order-paid}）：按消费金额发放积分（13 文档 1.3/3.4）。
+ * 消费 {@code OrderPaid}（topic={@code order_order-paid}）：按消费金额发放积分（13 文档 1.3/3.4）。
  *
  * <p>v1 积分规则：1 元 = 1 积分（向下取整）。幂等：积分账本 {@code (source_ref=ORDER:{id}, EARN)} 唯一，
  * 叠加 processed_event 去重。</p>
@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "order.order-paid",
+        topic = "order_order-paid",
         consumerGroup = OrderPaidConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class OrderPaidConsumer implements RocketMQListener<String> {

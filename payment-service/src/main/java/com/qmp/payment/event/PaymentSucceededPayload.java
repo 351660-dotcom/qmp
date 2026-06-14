@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * {@code PaymentSucceeded} 事件 payload（见 09 文档八.2，topic={@code payment.payment-succeeded}）。
+ * {@code PaymentSucceeded} 事件 payload（见 09 文档八.2，topic={@code payment_payment-succeeded}）。
  */
 @Getter
 @Builder

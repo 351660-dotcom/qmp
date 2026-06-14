@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = "payment.refund-succeeded",
+@RocketMQMessageListener(topic = "payment_refund-succeeded",
         consumerGroup = RefundReconConsumer.GROUP, consumeMode = ConsumeMode.ORDERLY)
 public class RefundReconConsumer implements RocketMQListener<String> {
 

@@ -22,7 +22,7 @@ import java.time.ZoneId;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = "payment.payment-succeeded",
+@RocketMQMessageListener(topic = "payment_payment-succeeded",
         consumerGroup = PaymentReconConsumer.GROUP, consumeMode = ConsumeMode.ORDERLY)
 public class PaymentReconConsumer implements RocketMQListener<String> {
 

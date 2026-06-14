@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 消费侧 {@code DiningChecked} payload（topic={@code dining.dining-checked}，dining-pos 发布）。
+ * 消费侧 {@code DiningChecked} payload（topic={@code dining_dining-checked}，dining-pos 发布）。
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

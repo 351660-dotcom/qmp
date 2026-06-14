@@ -24,7 +24,7 @@ import java.util.UUID;
  * }
  * }</pre>
  *
- * Topic 命名：{@code {domain}.{event-name-kebab}}，如 {@code payment.payment-succeeded}。
+ * Topic 命名：{@code {domain}.{event-name-kebab}}，如 {@code payment_payment-succeeded}。
  * 消费方按 {@code event_id} 写入各自的 {@code processed_event} 表去重。
  */
 @Getter

@@ -14,7 +14,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
 /**
- * 消费 {@code PaymentSucceeded}（topic={@code payment.payment-succeeded}）：
+ * 消费 {@code PaymentSucceeded}（topic={@code payment_payment-succeeded}）：
  * 逐 item 确认预占 + 出票，订单置 PAID（09 文档 8.2）。
  *
  * <p>幂等：{@code (consumer_group, event_id)} 去重；ORDERLY 与发布端 order_id 分区一致。
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "payment.payment-succeeded",
+        topic = "payment_payment-succeeded",
         consumerGroup = PaymentSucceededConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class PaymentSucceededConsumer implements RocketMQListener<String> {

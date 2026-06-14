@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * {@code TicketVerified} 事件 payload（09 文档八.2，topic={@code ticket-verification.ticket-verified}）。
+ * {@code TicketVerified} 事件 payload（09 文档八.2，topic={@code ticket-verification_ticket-verified}）。
  * order-service 消费后更新对应 OrderItem 凭证聚合状态，若该订单所有凭证均为终态则 {@code Order.status -> CLOSED}。
  */
 @Getter

@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 /**
- * {@code RefundSucceeded} 事件 payload（见 09 文档八.2，topic={@code payment.refund-succeeded}）。
+ * {@code RefundSucceeded} 事件 payload（见 09 文档八.2，topic={@code payment_refund-succeeded}）。
  */
 @Getter
 @Builder

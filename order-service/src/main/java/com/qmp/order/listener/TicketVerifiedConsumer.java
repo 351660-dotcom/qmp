@@ -14,7 +14,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
 /**
- * 消费 {@code TicketVerified}（topic={@code ticket-verification.ticket-verified}）：
+ * 消费 {@code TicketVerified}（topic={@code ticket-verification_ticket-verified}）：
  * 更新对应 OrderItem 凭证聚合，若订单全部核销则置 CLOSED（09 文档 8.2）。
  *
  * <p>幂等：{@code (consumer_group, event_id)} 去重保证每个核销事件只自增一次；
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "ticket-verification.ticket-verified",
+        topic = "ticket-verification_ticket-verified",
         consumerGroup = TicketVerifiedConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class TicketVerifiedConsumer implements RocketMQListener<String> {

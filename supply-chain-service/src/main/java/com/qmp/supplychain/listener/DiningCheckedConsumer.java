@@ -16,7 +16,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
 /**
- * 消费 {@code DiningChecked}（topic={@code dining.dining-checked}）：按 BOM 核减门店库存（12 文档 6.3）。
+ * 消费 {@code DiningChecked}（topic={@code dining_dining-checked}）：按 BOM 核减门店库存（12 文档 6.3）。
  *
  * <p>幂等：{@code processed_event (consumer_group, event_id)}。门店仓由 merchant_id 定位；
  * 未配置仓/BOM/库存仅记录异常（待库管补录后重放），不抛出以免无意义重投。</p>
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = "dining.dining-checked",
+        topic = "dining_dining-checked",
         consumerGroup = DiningCheckedConsumer.CONSUMER_GROUP,
         consumeMode = ConsumeMode.ORDERLY)
 public class DiningCheckedConsumer implements RocketMQListener<String> {

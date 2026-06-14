@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 /**
- * {@code WristbandConsumed} 事件 payload（topic={@code performance.wristband-consumed}）。
+ * {@code WristbandConsumed} 事件 payload（topic={@code performance_wristband-consumed}）。
  * 手牌二次消费后发布，供统一对账归集（④）。
  */
 @Getter

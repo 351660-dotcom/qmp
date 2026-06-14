@@ -36,7 +36,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class TableOrderService {
 
-    private static final String TOPIC_DINING_CHECKED = "dining.dining-checked";
+    private static final String TOPIC_DINING_CHECKED = "dining_dining-checked";
     private static final Set<String> CHECKOUT_TERMINAL = Set.of("SERVED", "CANCELLED", "RETURNED");
 
     private final TableOrderMapper tableOrderMapper;

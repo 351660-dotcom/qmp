@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.Instant;
 
 /**
- * 消费侧 {@code TicketVerified} payload（topic={@code ticket-verification.ticket-verified}）。
+ * 消费侧 {@code TicketVerified} payload（topic={@code ticket-verification_ticket-verified}）。
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

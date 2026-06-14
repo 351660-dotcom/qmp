@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * {@code DiningChecked} 事件 payload（topic={@code dining.dining-checked}）。
+ * {@code DiningChecked} 事件 payload（topic={@code dining_dining-checked}）。
  * 结账完成后发布，供 supply-chain-service 按 BOM 核减门店库存（12 文档 6.3）。
  */
 @Getter

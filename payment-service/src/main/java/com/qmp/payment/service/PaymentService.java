@@ -37,8 +37,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private static final String TOPIC_PAYMENT_SUCCEEDED = "payment.payment-succeeded";
-    private static final String TOPIC_REFUND_SUCCEEDED = "payment.refund-succeeded";
+    private static final String TOPIC_PAYMENT_SUCCEEDED = "payment_payment-succeeded";
+    private static final String TOPIC_REFUND_SUCCEEDED = "payment_refund-succeeded";
     private static final DateTimeFormatter PAYMENT_ID_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final PaymentOrderMapper paymentOrderMapper;

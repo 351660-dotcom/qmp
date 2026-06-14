@@ -29,7 +29,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WristbandService {
 
-    private static final String TOPIC_WRISTBAND_CONSUMED = "performance.wristband-consumed";
+    private static final String TOPIC_WRISTBAND_CONSUMED = "performance_wristband-consumed";
 
     private final WristbandAccountMapper accountMapper;
     private final WristbandLedgerMapper ledgerMapper;

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(topic = "member.wallet-consumed",
+@RocketMQMessageListener(topic = "member_wallet-consumed",
         consumerGroup = WalletReconConsumer.GROUP, consumeMode = ConsumeMode.ORDERLY)
 public class WalletReconConsumer implements RocketMQListener<String> {
 
