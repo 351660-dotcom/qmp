@@ -58,9 +58,11 @@
 ## 本地运行
 
 ```bash
-docker compose up -d --build      # 拉起 MySQL/Redis/RocketMQ + 7 个服务
+docker compose up -d --build      # 拉起 MySQL/Redis/RocketMQ + 全部业务服务
 # 调试示例（务必带租户头）
 curl -H 'X-Tenant-Id: 1001' http://localhost:8081/api/v1/skus/1001
+# 健康检查（actuator，由 inventory-kernel 统一提供；compose 已给每个服务配 healthcheck）
+curl http://localhost:8081/actuator/health   # {"status":"UP"}
 ```
 
 数据库初始化见 `docker/mysql/init/01-init-databases.sql`，各服务 Flyway 自动建表 + 种子数据

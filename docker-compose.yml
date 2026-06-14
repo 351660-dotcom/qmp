@@ -72,6 +72,12 @@ services:
       ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -88,6 +94,12 @@ services:
       ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8082:8082"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -105,6 +117,12 @@ services:
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8083:8083"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -125,6 +143,12 @@ services:
       REDIS_PORT: "6379"
     ports:
       - "8084:8084"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -144,6 +168,12 @@ services:
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8085:8085"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -165,15 +195,21 @@ services:
       INVENTORY_BASE_URL: http://inventory-service:8084
     ports:
       - "8086:8086"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8086/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
       rocketmq-broker:
         condition: service_started
       inventory-service:
-        condition: service_started
+        condition: service_healthy
       payment-service:
-        condition: service_started
+        condition: service_healthy
 
   order-service:
     build:
@@ -194,23 +230,29 @@ services:
       TICKET_VERIFICATION_BASE_URL: http://ticket-verification-service:8086
     ports:
       - "8087:8087"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8087/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
       rocketmq-broker:
         condition: service_started
       product-service:
-        condition: service_started
+        condition: service_healthy
       pricing-service:
-        condition: service_started
+        condition: service_healthy
       member-service:
-        condition: service_started
+        condition: service_healthy
       inventory-service:
-        condition: service_started
+        condition: service_healthy
       payment-service:
-        condition: service_started
+        condition: service_healthy
       ticket-verification-service:
-        condition: service_started
+        condition: service_healthy
 
   # ------------------------------------------------------------------
   # 其它业态链路（ADR-025：独立建表/建库，复用 inventory-kernel）
@@ -229,13 +271,19 @@ services:
       PAYMENT_BASE_URL: http://payment-service:8085
     ports:
       - "8088:8088"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8088/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
       rocketmq-broker:
         condition: service_started
       payment-service:
-        condition: service_started
+        condition: service_healthy
 
   marketing-service:
     build:
@@ -249,6 +297,12 @@ services:
       ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8089:8089"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8089/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -267,13 +321,19 @@ services:
       MEMBER_BASE_URL: http://member-service:8083
     ports:
       - "8090:8090"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
       rocketmq-broker:
         condition: service_started
       member-service:
-        condition: service_started
+        condition: service_healthy
 
   supply-chain-service:
     build:
@@ -288,6 +348,12 @@ services:
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8091:8091"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8091/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -308,13 +374,19 @@ services:
       PAYMENT_BASE_URL: http://payment-service:8085
     ports:
       - "8092:8092"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8092/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
       rocketmq-broker:
         condition: service_started
       payment-service:
-        condition: service_started
+        condition: service_healthy
 
   reconciliation-service:
     build:
@@ -329,6 +401,12 @@ services:
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8093:8093"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8093/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     depends_on:
       mysql:
         condition: service_healthy

@@ -14,6 +14,7 @@
 | `com.qmp.kernel.context` | `TenantContext`/`TraceContext`（ThreadLocal）+ `RequestContextFilter`（解析 `X-Tenant-Id`/`X-Trace-Id` 请求头） | 09 文档 1.1 / 10 文档通用约定 2 |
 | `com.qmp.kernel.mybatis` | `TenantLineHandlerImpl` + `MybatisPlusConfig`：SQL 层自动注入 `tenant_id` 条件 + 分页插件 | 10 文档通用约定 2 / ADR-021 |
 | `com.qmp.kernel.inventory` | `InventoryBucketBase`/`InventoryReservationBase`/`ReservationStatus`：「日期/场次型」库存桶 + 预占状态机的参考实现基类；`scripts/inventory_reserve.lua`/`inventory_release.lua`：防超卖第一道防线 Lua 脚本 | ADR-025 / 06 文档 / 07 文档 1.1-1.4 |
+| （pom 依赖）`spring-boot-starter-actuator` | 依赖内核即自动暴露 `/actuator/health`（默认仅 health 端点、不展开细节）：供 k8s 探针 / docker-compose healthcheck / 监控使用。`AdminAuthFilter` 只保护 `/admin/**`，不拦 actuator | ADR-004 非功能性需求（可观测性） |
 
 ## 各业务域实体如何复用 `InventoryBucketBase` / `InventoryReservationBase`
 
