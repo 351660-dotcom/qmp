@@ -53,12 +53,22 @@ class ReconciliationIT extends E2eSupport {
                 "{\"amount\":30.00,\"merchant_id\":%d,\"source_ref\":\"RECON-WB-IT-%d\"}".formatted(merchantId, merchantId));
 
         // 3) 等待对账归集：日汇总 in_total=130，by_source 含 PAYMENT(100)+WRISTBAND(30)
+        // recon_date 由服务端（容器，通常 UTC）时区决定，可能与宿主机 today 差一天；
+        // 扫描 today±1 天窗口定位本轮唯一商户的汇总，跨时区/午夜边界稳健。
         String reconBase = "http://localhost:8093/api/v1/reconciliation";
-        awaitUntil(Duration.ofSeconds(60), () -> {
-            JsonNode d = get(reconBase + "/daily?date=" + today + "&merchant_id=" + merchantId);
-            return d.get("in_total").asDouble() == 130.0;
+        LocalDate[] candidates = {today.minusDays(1), today, today.plusDays(1)};
+        JsonNode[] hit = new JsonNode[1];
+        awaitUntil(Duration.ofSeconds(90), () -> {
+            for (LocalDate d : candidates) {
+                JsonNode s = get(reconBase + "/daily?date=" + d + "&merchant_id=" + merchantId);
+                if (s.get("in_total").asDouble() == 130.0) {
+                    hit[0] = s;
+                    return true;
+                }
+            }
+            return false;
         });
-        JsonNode summary = get(reconBase + "/daily?date=" + today + "&merchant_id=" + merchantId);
+        JsonNode summary = hit[0];
         assertThat(summary.get("out_total").asDouble()).isEqualTo(0.0);
         assertThat(summary.get("net").asDouble()).isEqualTo(130.0);
         assertThat(summary.get("by_source").get("PAYMENT").asDouble()).isEqualTo(100.0);
