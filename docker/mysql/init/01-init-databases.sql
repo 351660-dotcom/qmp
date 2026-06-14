@@ -10,3 +10,5 @@ CREATE DATABASE IF NOT EXISTS order_db               DEFAULT CHARACTER SET utf8m
 -- 其它业态链路（按 ADR-025 各自独立建库，复用 inventory-kernel 设计模式）
 CREATE DATABASE IF NOT EXISTS hotel_db               DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS marketing_db           DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS dining_db              DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS supply_chain_db        DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

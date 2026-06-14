@@ -26,6 +26,8 @@
     <module>order-service</module>
     <module>hotel-pms-service</module>
     <module>marketing-service</module>
+    <module>dining-pos-service</module>
+    <module>supply-chain-service</module>
     <module>integration-tests</module>
   </modules>
 

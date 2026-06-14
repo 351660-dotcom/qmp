@@ -18,6 +18,8 @@
 | `order-service` | 8087 | order_db | 编排中心（C 端入口） | 消费 `PaymentSucceeded`/`TicketVerified`，发 `OrderPaid` |
 | `hotel-pms-service` | 8088 | hotel_db | 酒店 PMS（房型/房晚库存/连住预订） | 消费 `PaymentSucceeded` |
 | `marketing-service` | 8089 | marketing_db | 营销中心（v1 优惠券） | - |
+| `dining-pos-service` | 8090 | dining_db | 餐饮收银 POS（桌台/台账/点单/沽清/结账） | 发 `DiningChecked` |
+| `supply-chain-service` | 8091 | supply_chain_db | 供应链（库存/BOM 自动核减） | 消费 `DiningChecked` |
 | `integration-tests` | - | - | 门票黄金路径端到端测试 | - |
 
 > member-service 已扩展会员等级/积分/储值（13 文档），消费 `OrderPaid` 发放积分。
