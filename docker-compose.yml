@@ -69,6 +69,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8081:8081"
     depends_on:
@@ -84,6 +85,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8082:8082"
     depends_on:
@@ -99,6 +101,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8083:8083"
@@ -117,6 +120,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       REDIS_HOST: redis
       REDIS_PORT: "6379"
     ports:
@@ -136,6 +140,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8085:8085"
@@ -154,6 +159,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PAYMENT_BASE_URL: http://payment-service:8085
       INVENTORY_BASE_URL: http://inventory-service:8084
@@ -178,6 +184,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PRODUCT_BASE_URL: http://product-service:8081
       PRICING_BASE_URL: http://pricing-service:8082
@@ -217,6 +224,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PAYMENT_BASE_URL: http://payment-service:8085
     ports:
@@ -238,6 +246,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
     ports:
       - "8089:8089"
     depends_on:
@@ -253,6 +262,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       MEMBER_BASE_URL: http://member-service:8083
     ports:
@@ -274,6 +284,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8091:8091"
@@ -292,6 +303,7 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PAYMENT_BASE_URL: http://payment-service:8085
     ports:

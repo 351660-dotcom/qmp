@@ -67,7 +67,9 @@ curl -H 'X-Tenant-Id: 1001' http://localhost:8081/api/v1/skus/1001
 主数据可由后台维护（替代种子 SQL），统一前缀 `/admin/v1`，需带 `X-Tenant-Id` 头：
 product（商品/票种/上下架）、pricing（价格 upsert）、inventory（库存桶 upsert）、order（订单列表）。
 完整清单与造数示例见 [docs/后台管理接口.md](docs/后台管理接口.md)。
-v1 暂未接管理员鉴权（ADR-011 后续补），生产应置于网关后并加鉴权。
+**鉴权**：`inventory-kernel` 的 `AdminAuthFilter` 统一保护 `/admin/**`——配置 `ADMIN_API_TOKEN` 后
+须带 `X-Admin-Token` 头（否则 401），未配置则放行（本地/单测友好）。docker-compose 已注入
+`ADMIN_API_TOKEN=scenic-admin-dev-token`。细粒度 RBAC（ADR-011）后续补。
 
 ## 测试
 

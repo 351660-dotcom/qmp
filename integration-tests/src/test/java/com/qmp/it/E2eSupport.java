@@ -27,6 +27,8 @@ abstract class E2eSupport {
     protected static final String TENANT_ID = "1001";
     protected static final long SCENIC_ID = 3001L;
     protected static final long MERCHANT_ID = 2001L;
+    /** 后台鉴权令牌（与 docker-compose ADMIN_API_TOKEN 一致）；服务未启用鉴权时该头被忽略。 */
+    protected static final String ADMIN_TOKEN = env("ADMIN_API_TOKEN", "scenic-admin-dev-token");
 
     protected static final String PRODUCT_BASE = env("PRODUCT_BASE_URL", "http://localhost:8081");
     protected static final String PRICING_BASE = env("PRICING_BASE_URL", "http://localhost:8082");
@@ -54,6 +56,7 @@ abstract class E2eSupport {
         try {
             HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
                     .header("X-Tenant-Id", TENANT_ID)
+                    .header("X-Admin-Token", ADMIN_TOKEN)
                     .header("Content-Type", "application/json");
             b = (body == null) ? b.POST(HttpRequest.BodyPublishers.noBody())
                     : b.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
@@ -70,7 +73,8 @@ abstract class E2eSupport {
     protected JsonNode put(String url, String body) {
         try {
             HttpResponse<String> resp = http.send(HttpRequest.newBuilder(URI.create(url))
-                    .header("X-Tenant-Id", TENANT_ID).header("Content-Type", "application/json")
+                    .header("X-Tenant-Id", TENANT_ID).header("X-Admin-Token", ADMIN_TOKEN)
+                    .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(),
                     HttpResponse.BodyHandlers.ofString());
             assertThat(resp.statusCode()).as("PUT %s -> %s", url, resp.body()).isEqualTo(200);

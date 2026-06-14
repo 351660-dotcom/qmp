@@ -7,6 +7,7 @@ package com.qmp.kernel.common;
 public enum CommonErrorCode implements ErrorCode {
 
     INVALID_PARAM(400, "COMMON_INVALID_PARAM", "参数校验失败"),
+    UNAUTHORIZED(401, "COMMON_UNAUTHORIZED", "未授权"),
     INTERNAL_ERROR(500, "INTERNAL_ERROR", "系统内部错误");
 
     private final int httpStatus;
