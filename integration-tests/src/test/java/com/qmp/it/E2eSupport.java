@@ -84,6 +84,29 @@ abstract class E2eSupport {
         }
     }
 
+    /** 原始 POST（自定义租户，不断言状态），用于校验错误码 / 隔离租户的用例。 */
+    protected HttpResponse<String> rawPost(String url, String body, String tenant) {
+        try {
+            HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
+                    .header("X-Tenant-Id", tenant)
+                    .header("X-Admin-Token", ADMIN_TOKEN)
+                    .header("Content-Type", "application/json");
+            b = (body == null) ? b.POST(HttpRequest.BodyPublishers.noBody())
+                    : b.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+            return http.send(b.build(), HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected JsonNode dataOf(HttpResponse<String> resp) {
+        try {
+            return om.readTree(resp.body()).get("data");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected JsonNode get(String url) {
         try {
             HttpResponse<String> resp = http.send(HttpRequest.newBuilder(URI.create(url))

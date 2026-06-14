@@ -1,8 +1,12 @@
 package com.qmp.marketing.controller;
 
 import com.qmp.kernel.common.ApiResponse;
+import com.qmp.marketing.dto.admin.CreatePromotionRuleRequest;
+import com.qmp.marketing.dto.admin.CreateSeckillRequest;
 import com.qmp.marketing.dto.admin.CreateTemplateRequest;
+import com.qmp.marketing.dto.admin.UpsertSeckillBucketRequest;
 import com.qmp.marketing.entity.CouponTemplate;
+import com.qmp.marketing.entity.PromotionRule;
 import com.qmp.marketing.service.AdminMarketingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,5 +36,25 @@ public class AdminMarketingController {
     @GetMapping("/coupon-templates")
     public ApiResponse<List<CouponTemplate>> listTemplates() {
         return ApiResponse.ok(adminMarketingService.listTemplates());
+    }
+
+    @PostMapping("/promotion-rules")
+    public ApiResponse<Map<String, Object>> createRule(@RequestBody CreatePromotionRuleRequest request) {
+        return ApiResponse.ok(Map.of("rule_id", adminMarketingService.createPromotionRule(request)));
+    }
+
+    @GetMapping("/promotion-rules")
+    public ApiResponse<List<PromotionRule>> listRules() {
+        return ApiResponse.ok(adminMarketingService.listPromotionRules());
+    }
+
+    @PostMapping("/seckill-activities")
+    public ApiResponse<Map<String, Object>> createSeckill(@RequestBody CreateSeckillRequest request) {
+        return ApiResponse.ok(Map.of("activity_id", adminMarketingService.createSeckill(request)));
+    }
+
+    @PostMapping("/seckill-buckets")
+    public ApiResponse<Map<String, Object>> upsertSeckillBucket(@RequestBody UpsertSeckillBucketRequest request) {
+        return ApiResponse.ok(Map.of("bucket_id", adminMarketingService.upsertSeckillBucket(request)));
     }
 }
