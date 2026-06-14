@@ -25,6 +25,7 @@
     <module>ticket-verification-service</module>
     <module>order-service</module>
     <module>hotel-pms-service</module>
+    <module>marketing-service</module>
     <module>integration-tests</module>
   </modules>
 

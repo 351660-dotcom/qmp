@@ -18,6 +18,12 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
 
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESRV:localhost:9876}
+  producer:
+    # 本服务仅消费 OrderPaid，保留 producer group 占位
+    group: member-service-producer
+
 logging:
   level:
     com.qmp: INFO

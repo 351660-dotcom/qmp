@@ -1,34 +1,28 @@
 package com.qmp.member.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 会员账户（10 文档 4.1 {@code member_account}）。
+ * 储值账户（13 文档 1.4，集团级跨商户通用）。
  */
 @Data
-@TableName("member_account")
-public class MemberAccount {
+@TableName("member_wallet")
+public class MemberWallet {
 
-    @TableId
+    @TableId(type = IdType.INPUT)
     private Long userId;
 
     private Long tenantId;
 
-    /** 关联 member_level（13 文档 1.1）。 */
-    private Long levelId;
-
-    /** 成长值，累计消费折算。 */
-    private Integer growthValue;
-
-    private Boolean isMember;
-
-    private LocalDateTime memberSince;
+    private BigDecimal balance;
 
     @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;

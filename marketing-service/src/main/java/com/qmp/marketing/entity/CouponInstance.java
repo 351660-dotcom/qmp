@@ -1,6 +1,7 @@
-package com.qmp.member.entity;
+package com.qmp.marketing.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -9,26 +10,30 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 会员账户（10 文档 4.1 {@code member_account}）。
+ * 优惠券实例（13 文档 4.2）。状态机：UNUSED -> USED（核销）/ EXPIRED；取消回退 USED -> UNUSED。
  */
 @Data
-@TableName("member_account")
-public class MemberAccount {
+@TableName("coupon_instance")
+public class CouponInstance {
 
-    @TableId
-    private Long userId;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long couponId;
 
     private Long tenantId;
 
-    /** 关联 member_level（13 文档 1.1）。 */
-    private Long levelId;
+    private Long templateId;
 
-    /** 成长值，累计消费折算。 */
-    private Integer growthValue;
+    private Long userId;
 
-    private Boolean isMember;
+    /** UNUSED/USED/EXPIRED。 */
+    private String status;
 
-    private LocalDateTime memberSince;
+    private LocalDateTime issuedAt;
+
+    private LocalDateTime usedAt;
+
+    /** 核销时关联订单。 */
+    private Long orderId;
 
     @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;

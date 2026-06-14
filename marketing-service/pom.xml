@@ -10,11 +10,12 @@
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>member-service</artifactId>
+  <artifactId>marketing-service</artifactId>
   <packaging>jar</packaging>
-  <name>member-service</name>
+  <name>marketing-service</name>
   <description>
-    会员中心：会员身份查询（member_account），供 order-service 创建订单时判断会员价（09 文档四）。
+    营销中心（13 文档）：v1 优惠券中心（CouponTemplate/CouponInstance：模板管理、发券、查券、核销/回退）。
+    营销规则引擎/秒杀拼团砍价/跨商户成本分摊为后续迭代。
   </description>
 
   <dependencies>
@@ -26,11 +27,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.rocketmq</groupId>
-      <artifactId>rocketmq-spring-boot-starter</artifactId>
     </dependency>
 
     <dependency>
@@ -58,7 +54,7 @@
   </dependencies>
 
   <build>
-    <finalName>member-service</finalName>
+    <finalName>marketing-service</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

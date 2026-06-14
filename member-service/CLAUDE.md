@@ -34,8 +34,32 @@
 本地调试需带 `X-Tenant-Id: 1001` 请求头，否则 `inventory-kernel` 的租户拦截器会用默认值 `0`
 作为查询条件，查不到种子数据。
 
+## 会员体系扩展（13 文档一，V3/V4 迁移）
+
+已落地等级 / 积分 / 储值：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/v1/members/{userId}/points` | 查积分余额 |
+| POST | `/api/v1/members/{userId}/points/redeem` | 积分抵扣（条件更新防负） |
+| GET | `/api/v1/members/{userId}/wallet` | 查储值余额 |
+| POST | `/api/v1/members/{userId}/wallet/recharge` | 充值 |
+| POST | `/api/v1/members/{userId}/wallet/deduct` | 消费扣减（= 12 文档 DeductWallet） |
+| POST/GET | `/admin/v1/levels` | 后台维护会员等级 |
+
+- **积分入账**：消费 `OrderPaid`（topic `order.order-paid`，order-service 发布）→ 按金额发放积分
+  （v1 规则 1 元=1 积分，向下取整），consumer_group `member-service-order-paid-consumer`，ORDERLY。
+- **幂等**：积分/储值账本 `(source_ref, type)` 唯一约束 + 事务回滚；OrderPaid 叠加 `processed_event` 去重。
+  积分来源 `source_ref = "ORDER:{order_id}"`。
+- **余额安全**：`PointAccountMapper.deductBalance`/`MemberWalletMapper.deductBalance` 用
+  `WHERE balance >= ?` 条件更新（与 ADR-018 库存防超卖同原则）。
+- **等级升级**：`earn` 时累加 `member_account.growth_value` 并按 `member_level.min_growth_value` 阈值自动定级。
+- 错误码：`MEMBER_INSUFFICIENT_POINTS`(409)、`MEMBER_INSUFFICIENT_BALANCE`(409)、`MEMBER_INVALID_AMOUNT`(400)。
+
+### v1 简化
+- 储值充值 `recharge` 为直接入账；真实充值资金应走 payment 的「储值专户」+ 消费时再分账（13 文档 1.4），后续补。
+- 积分过期（EXPIRE）、等级降级/有效期、跨商户积分分摊（13 文档二）未做。
+
 ## 范围边界
 
-本期仅包含会员身份（`is_member`）查询，不包含会员等级/积分/钱包等能力——这些属于
-docs/13 设计的 `member-service` 扩展范围（`MemberLevel`/`PointAccount`/`MemberWallet` 等），
-将在门票黄金路径之后按需补齐，遵循 ADR-010「模块化单体」原则不跨模块访问表。
+会员身份/等级/积分/储值归本服务；优惠券/营销规则在 marketing-service；不跨模块访问表（ADR-005）。

@@ -17,12 +17,15 @@ import com.qmp.order.dto.PayResponse;
 import com.qmp.order.entity.OrderItem;
 import com.qmp.order.entity.TradeOrder;
 import com.qmp.order.error.OrderErrorCode;
+import com.qmp.kernel.event.EventEnvelope;
+import com.qmp.order.event.OrderPaidPayload;
 import com.qmp.order.event.PaymentSucceededPayload;
 import com.qmp.order.event.TicketVerifiedPayload;
 import com.qmp.order.mapper.OrderItemMapper;
 import com.qmp.order.mapper.TradeOrderMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -46,6 +49,7 @@ public class OrderService {
     private static final String DEFAULT_REFUND_POLICY =
             "{\"type\":\"TIERED\",\"cutoff_hours\":24,\"refund_ratio\":0.8}";
     private static final int PAY_EXPIRE_MINUTES = 15;
+    private static final String TOPIC_ORDER_PAID = "order.order-paid";
 
     private final TradeOrderMapper tradeOrderMapper;
     private final OrderItemMapper orderItemMapper;
@@ -55,6 +59,7 @@ public class OrderService {
     private final InventoryClient inventoryClient;
     private final PaymentClient paymentClient;
     private final TicketVerificationClient ticketVerificationClient;
+    private final RocketMQTemplate rocketMQTemplate;
 
     // ------------------------------------------------------------------
     // 创建订单（编排 + 显式补偿，09 文档 8.1）
@@ -214,8 +219,23 @@ public class OrderService {
             order.setPaidAmount(payload.getAmount());
             order.setPaymentId(payload.getPaymentId());
             tradeOrderMapper.updateById(order);
+            publishOrderPaid(order);
         }
         log.info("PaymentSucceeded 处理完成: orderId={}", order.getOrderId());
+    }
+
+    /** 发布 OrderPaid（13 文档 2.4/3.4），供 member-service 积分入账、marketing-service 营销履约消费。 */
+    private void publishOrderPaid(TradeOrder order) {
+        OrderPaidPayload payload = OrderPaidPayload.builder()
+                .orderId(order.getOrderId())
+                .userId(order.getUserId())
+                .merchantId(order.getMerchantId())
+                .totalAmount(order.getTotalAmount())
+                .build();
+        EventEnvelope<OrderPaidPayload> event = EventEnvelope.of("OrderPaid", order.getTenantId(), payload);
+        rocketMQTemplate.syncSendOrderly(TOPIC_ORDER_PAID, event, String.valueOf(order.getOrderId()));
+        log.info("发布 OrderPaid: orderId={}, userId={}, amount={}",
+                order.getOrderId(), order.getUserId(), order.getTotalAmount());
     }
 
     // ------------------------------------------------------------------

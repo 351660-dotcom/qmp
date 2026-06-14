@@ -15,8 +15,13 @@
 | `inventory-service` | 8084 | inventory_db | 库存预占/确认/释放（两道防线） | - |
 | `payment-service` | 8085 | payment_db | 支付单/分账/退款 | 发 `PaymentSucceeded`/`RefundSucceeded` |
 | `ticket-verification-service` | 8086 | ticket_verification_db | 出票/核验/退票申请 | 发 `TicketVerified`，消费 `RefundSucceeded` |
-| `order-service` | 8087 | order_db | 编排中心（C 端入口） | 消费 `PaymentSucceeded`/`TicketVerified` |
+| `order-service` | 8087 | order_db | 编排中心（C 端入口） | 消费 `PaymentSucceeded`/`TicketVerified`，发 `OrderPaid` |
+| `hotel-pms-service` | 8088 | hotel_db | 酒店 PMS（房型/房晚库存/连住预订） | 消费 `PaymentSucceeded` |
+| `marketing-service` | 8089 | marketing_db | 营销中心（v1 优惠券） | - |
 | `integration-tests` | - | - | 门票黄金路径端到端测试 | - |
+
+> member-service 已扩展会员等级/积分/储值（13 文档），消费 `OrderPaid` 发放积分。
+> 跨业态事件主题 `payment.payment-succeeded` 由门票 order-service 与酒店 hotel-pms-service 各自按 order_id 认领。
 
 每个服务目录下有自己的 `CLAUDE.md`，记录其端口/库/接口/事件/**v1 设计决策**与范围边界——
 改某服务前先读它的 `CLAUDE.md`。

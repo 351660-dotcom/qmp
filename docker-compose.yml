@@ -99,11 +99,14 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
     ports:
       - "8083:8083"
     depends_on:
       mysql:
         condition: service_healthy
+      rocketmq-broker:
+        condition: service_started
 
   inventory-service:
     build:
@@ -225,6 +228,21 @@ services:
         condition: service_started
       payment-service:
         condition: service_started
+
+  marketing-service:
+    build:
+      context: .
+      dockerfile: marketing-service/Dockerfile
+    container_name: scenic-marketing-service
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+    ports:
+      - "8089:8089"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   mysql-data:
