@@ -20,6 +20,7 @@ import com.qmp.order.error.OrderErrorCode;
 import com.qmp.kernel.event.EventEnvelope;
 import com.qmp.order.event.OrderPaidPayload;
 import com.qmp.order.event.PaymentSucceededPayload;
+import com.qmp.order.event.RefundSucceededPayload;
 import com.qmp.order.event.TicketVerifiedPayload;
 import com.qmp.order.mapper.OrderItemMapper;
 import com.qmp.order.mapper.TradeOrderMapper;
@@ -268,6 +269,24 @@ public class OrderService {
             tradeOrderMapper.updateById(order);
             log.info("订单全部核销，置为 CLOSED: orderId={}", order.getOrderId());
         }
+    }
+
+    // ------------------------------------------------------------------
+    // 消费 RefundSucceeded：按 order_id 累加退款金额（凭证/库存由 ticket-verification 处理）
+    // ------------------------------------------------------------------
+    @Transactional
+    public void handleRefundSucceeded(RefundSucceededPayload payload) {
+        TradeOrder order = tradeOrderMapper.selectById(payload.getOrderId());
+        if (order == null) {
+            log.warn("RefundSucceeded: 订单不存在 orderId={}", payload.getOrderId());
+            return;
+        }
+        BigDecimal current = order.getRefundAmount() != null ? order.getRefundAmount() : BigDecimal.ZERO;
+        BigDecimal delta = payload.getAmount() != null ? payload.getAmount() : BigDecimal.ZERO;
+        order.setRefundAmount(current.add(delta));
+        tradeOrderMapper.updateById(order);
+        log.info("RefundSucceeded 累加退款: orderId={}, refundId={}, +{} => refundAmount={}",
+                order.getOrderId(), payload.getRefundId(), delta, order.getRefundAmount());
     }
 
     // ------------------------------------------------------------------

@@ -123,16 +123,19 @@ class TicketGoldenPathIT {
         JsonNode refund = postJson(TICKET_BASE + "/api/v1/credentials/" + credB.credentialId + "/refund-request", null);
         assertThat(refund.get("refund_id").asLong()).isPositive();
 
-        // 8) 等待 RefundSucceeded 被核验服务消费：凭证 REFUNDED + 库存预占 RELEASED
+        // 8) 等待 RefundSucceeded 被消费：核验服务侧凭证 REFUNDED + 库存 RELEASED，
+        //    order 侧累加 refund_amount = 88(会员价) × 0.8(退款比例) = 70.40
         awaitUntil(Duration.ofSeconds(60), () ->
                 "REFUNDED".equals(credentialStatus(credB.credentialId))
-                        && "RELEASED".equals(reservationStatus(orderItemB)));
+                        && "RELEASED".equals(reservationStatus(orderItemB))
+                        && new java.math.BigDecimal("70.40").compareTo(orderRefundAmount(orderId)) == 0);
 
         // 9) 终态断言
         assertThat(credentialStatus(credA.credentialId)).isEqualTo("VERIFIED");
         assertThat(credentialStatus(credB.credentialId)).isEqualTo("REFUNDED");
         assertThat(reservationStatus(orderItemA)).isEqualTo("CONFIRMED"); // 已核验，库存保持已售
         assertThat(reservationStatus(orderItemB)).isEqualTo("RELEASED");  // 已退票，库存已释放
+        assertThat(orderRefundAmount(orderId)).isEqualByComparingTo("70.40"); // order 已累加退款金额
 
         // 库存账本：itemB 退票释放后该场次余量回补
         JsonNode availB = get(INVENTORY_BASE + "/api/v1/inventory/availability?sku_id="
@@ -252,6 +255,11 @@ class TicketGoldenPathIT {
     private String credentialStatus(long credentialId) {
         return scalar("SELECT status FROM ticket_verification_db.ticket_credential WHERE credential_id = "
                 + credentialId);
+    }
+
+    private java.math.BigDecimal orderRefundAmount(long orderId) {
+        String s = scalar("SELECT refund_amount FROM order_db.trade_order WHERE order_id = " + orderId);
+        return s == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(s);
     }
 
     private String reservationStatus(String orderItemId) {

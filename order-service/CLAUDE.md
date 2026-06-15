@@ -59,9 +59,10 @@ member.GetMemberStatus → 逐 item: product.GetSku（校验 ON_SALE）→ prici
    出票时透传给凭证。接入商品/营销退改配置后改为按 sku 取真实快照。
 4. **单商户购物车**：v1 以 item 的 scenic_id/merchant_id 落 `trade_order`（黄金路径同景区同商户）；
    跨商户购物车需拆分子订单 + 多支付单（08/10 文档已注明 payment 1:1 约束待放开）。
-5. **不消费 `RefundSucceeded`**：库存释放由 ticket-verification-service 消费 `RefundSucceeded` 完成
-   （它持有 credential→order_item 映射，order-service 无 credential_id 映射）。order-service v1 暂不据退款
-   更新 `trade_order.refund_amount`/状态——待退款链路细化时补 order 侧 refund 消费。
+5. **消费 `RefundSucceeded` 累加 `refund_amount`**：order-service 以 `order-service-refund-consumer`
+   消费 `payment_refund-succeeded`，按 `order_id` 累加 `trade_order.refund_amount`（幂等去重 + ORDERLY）。
+   库存释放与凭证置 REFUNDED 仍由 ticket-verification-service 独立消费同一事件完成（它持 credential→order_item 映射）。
+   v1 仅累加金额、不改订单状态（部分退票不应关单；全额退款的状态收口待退款链路细化时再补）。
 6. **`pay` 仅 `PENDING_PAYMENT` 可发起**：payment.createPayment 幂等（键 order_id），重复 pay 返回同一支付单。
 
 ## 多租户调试提示
