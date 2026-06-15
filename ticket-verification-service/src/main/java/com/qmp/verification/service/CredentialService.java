@@ -17,6 +17,7 @@ import com.qmp.verification.dto.VerifyRequest;
 import com.qmp.verification.dto.VerifyResponse;
 import com.qmp.verification.entity.TicketCredential;
 import com.qmp.verification.entity.VerificationRecord;
+import com.qmp.verification.entity.VerifyKey;
 import com.qmp.verification.error.VerificationErrorCode;
 import com.qmp.verification.event.TicketVerifiedPayload;
 import com.qmp.verification.mapper.TicketCredentialMapper;
@@ -54,6 +55,7 @@ public class CredentialService {
     private final TicketCredentialMapper credentialMapper;
     private final VerificationRecordMapper verificationRecordMapper;
     private final VerifyCodeSigner verifyCodeSigner;
+    private final VerifyKeyService verifyKeyService;
     private final ObjectMapper objectMapper;
     private final RocketMQTemplate rocketMQTemplate;
     private final PaymentClient paymentClient;
@@ -73,6 +75,11 @@ public class CredentialService {
 
         String policyJson = request.getRefundPolicySnapshot() != null
                 ? request.getRefundPolicySnapshot().toString() : null;
+
+        // 取该景区的 ACTIVE 签名密钥（按租户/景区独立 + 轮换）；未配置则回落全局密钥（kid=0）
+        VerifyKey signKey = verifyKeyService.resolveActive(request.getScenicId());
+        long kid = signKey != null ? signKey.getId() : 0L;
+        String signSecret = signKey != null ? signKey.getSecret() : null;
 
         for (int index = 1; index <= request.getQuantity(); index++) {
             long credentialId = IdWorker.getId();
@@ -94,7 +101,8 @@ public class CredentialService {
                     credentialId,
                     request.getOrderItemId(),
                     request.getSkuId() != null ? request.getSkuId() : 0L,
-                    request.getSaleDate() != null ? request.getSaleDate().toString() : null)));
+                    request.getSaleDate() != null ? request.getSaleDate().toString() : null,
+                    kid), signSecret));
 
             credentialMapper.insert(credential);
             existing.add(credential);

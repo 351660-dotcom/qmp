@@ -39,7 +39,11 @@
 格式：`base64url(payloadJson).hex(HMAC-SHA256(payload, secret))`，payload 内嵌
 `{cid, oii, sku, d}`。核验时重算 HMAC 常量时间比对，不符返回 400 `INVALID_SIGNATURE`。
 边缘节点持同一 secret 即可离线验签（满足 07 文档 3「核销不依赖订单服务在线」）。
-secret 来自 `VERIFY_CODE_SECRET`，v1 全局单密钥。
+
+**按租户/景区独立密钥 + 轮换**（`verify_key` 表，V2 迁移）：payload 内嵌 `kid`(=`verify_key.id`)。
+出票时取该景区 ACTIVE 密钥签名（`VerifyKeyService.resolveActive`）；验签按码内 kid 取对应密钥
+（含已轮换 RETIRED 的，使旧码仍可验）。后台 `POST /admin/v1/verify-keys/rotate?scenic_id=` 轮换：
+生成新 ACTIVE 版本、旧版本置 RETIRED。景区未配置密钥时 `kid=0` 回落全局密钥 `VERIFY_CODE_SECRET`（兼容）。
 
 ## 发布的事件
 
