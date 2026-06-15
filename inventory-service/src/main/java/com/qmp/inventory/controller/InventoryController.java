@@ -46,7 +46,9 @@ public class InventoryController {
     }
 
     @PostMapping("/reservations/{reservationId}/release")
-    public ApiResponse<ReservationResponse> release(@PathVariable String reservationId) {
-        return ApiResponse.ok(inventoryService.releaseReservation(reservationId));
+    public ApiResponse<ReservationResponse> release(
+            @PathVariable String reservationId,
+            @RequestParam(value = "quantity", required = false) Integer quantity) {
+        return ApiResponse.ok(inventoryService.releaseReservation(reservationId, quantity));
     }
 }

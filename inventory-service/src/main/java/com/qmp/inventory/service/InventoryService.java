@@ -117,8 +117,19 @@ public class InventoryService {
         return toResponse(reservation);
     }
 
+    /** 释放整笔预占剩余未释放的全部数量（取消/超时/补偿用，保持原语义）。 */
     @Transactional
     public ReservationResponse releaseReservation(String reservationId) {
+        return releaseReservation(reservationId, null);
+    }
+
+    /**
+     * 释放预占：{@code quantity} 为本次释放张数；传 {@code null} 表示释放剩余全部（整笔）。
+     * 支持「按张」部分退票——一笔多张预占可分次释放，{@code released_quantity} 累加，
+     * 直到等于 {@code quantity} 才整笔置 RELEASED；未释满时保持 HOLDING/CONFIRMED。幂等：超额/重复释放自动截断。
+     */
+    @Transactional
+    public ReservationResponse releaseReservation(String reservationId, Integer quantity) {
         InventoryReservation reservation = getReservationOrThrow(reservationId);
 
         if (ReservationStatus.RELEASED.name().equals(reservation.getStatus())
@@ -126,16 +137,27 @@ public class InventoryService {
             return toResponse(reservation);
         }
 
-        if (ReservationStatus.HOLDING.name().equals(reservation.getStatus())) {
-            bucketMapper.releaseLock(reservation.getBucketId(), reservation.getQuantity());
+        int already = reservation.getReleasedQuantity() != null ? reservation.getReleasedQuantity() : 0;
+        int remaining = reservation.getQuantity() - already;
+        int toRelease = (quantity == null) ? remaining : Math.min(quantity, remaining);
+        if (toRelease <= 0) {
+            return toResponse(reservation); // 无可释放（幂等）
+        }
+
+        boolean holding = ReservationStatus.HOLDING.name().equals(reservation.getStatus());
+        if (holding) {
+            bucketMapper.releaseLock(reservation.getBucketId(), toRelease);
         } else {
-            bucketMapper.releaseSold(reservation.getBucketId(), reservation.getQuantity());
+            bucketMapper.releaseSold(reservation.getBucketId(), toRelease);
         }
         redisTemplate.execute(inventoryReleaseScript,
                 Collections.singletonList(remainKey(reservation.getBucketId())),
-                String.valueOf(reservation.getQuantity()));
+                String.valueOf(toRelease));
 
-        reservation.setStatus(ReservationStatus.RELEASED.name());
+        reservation.setReleasedQuantity(already + toRelease);
+        if (reservation.getReleasedQuantity() >= reservation.getQuantity()) {
+            reservation.setStatus(ReservationStatus.RELEASED.name());
+        }
         reservationMapper.updateById(reservation);
         return toResponse(reservation);
     }

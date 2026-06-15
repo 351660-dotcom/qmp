@@ -12,4 +12,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @TableName("inventory_reservation")
 public class InventoryReservation extends InventoryReservationBase {
+
+    /** 已释放数量（部分退票按张累加）；{@code released_quantity == quantity} 时整笔 RELEASED。 */
+    private Integer releasedQuantity;
 }

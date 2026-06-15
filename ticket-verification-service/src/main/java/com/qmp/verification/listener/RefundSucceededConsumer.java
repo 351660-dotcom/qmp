@@ -65,8 +65,9 @@ public class RefundSucceededConsumer implements RocketMQListener<String> {
             if (credential == null) {
                 log.warn("RefundSucceeded: 凭证不存在 credentialId={}，仅写去重", payload.getCredentialId());
             } else {
-                // 1) 释放库存（reservation_id = order_item_id），inventory 接口幂等
-                inventoryClient.releaseReservation(tenantId, credential.getOrderItemId());
+                // 1) 按张释放库存：一张凭证对应预占中的 1 个名额（reservation_id = order_item_id），
+                //    多张明细的部分退票只回补 1 个名额，避免整笔释放导致超额回补。inventory 接口幂等。
+                inventoryClient.releaseReservation(tenantId, credential.getOrderItemId(), 1);
                 // 2) 凭证置终态 REFUNDED，幂等
                 credentialService.markRefunded(credential.getCredentialId());
             }

@@ -29,6 +29,10 @@
 `HOLDING`（创建预占）→ `CONFIRMED`（确认，支付成功）/ `RELEASED`（释放，取消或退票）/
 `EXPIRED`（超时未支付，由 `ExpireReservationJob` 扫描置位）。
 
+> **部分释放（按张退票）**：预占带 `released_quantity`，释放接口可传 `quantity` 只释放 N 张
+> （`releaseSold`/`releaseLock` 按 N 回补桶）。`released_quantity < quantity` 时预占仍 CONFIRMED/HOLDING；
+> 累加到等于 `quantity` 才整笔 RELEASED。修复了原「一笔多张只能整笔释放→单张退票超额回补」的限制。
+
 ## 对外接口（09 文档五）
 
 | 方法 | 路径 | 说明 |
@@ -36,7 +40,7 @@
 | GET | `/api/v1/inventory/availability?sku_id=&sale_date=&time_slot_id=` | 查询库存余量（C 端展示用，非强一致） |
 | POST | `/api/v1/inventory/reservations` | 创建预占，幂等键 = `reservation_id`（约定 = `order_item_id`） |
 | POST | `/api/v1/inventory/reservations/{reservation_id}/confirm` | 确认预占 HOLDING->CONFIRMED（幂等） |
-| POST | `/api/v1/inventory/reservations/{reservation_id}/release` | 释放预占 HOLDING\|CONFIRMED->RELEASED（幂等） |
+| POST | `/api/v1/inventory/reservations/{reservation_id}/release[?quantity=N]` | 释放预占（幂等）。带 `quantity` 按张部分释放（`released_quantity` 累加，释满才 RELEASED）；不带则释放剩余全部 |
 
 错误码：`INVENTORY_BUCKET_NOT_FOUND`(404)、`INVENTORY_INSUFFICIENT_STOCK`(409)、
 `INVENTORY_RESERVATION_NOT_FOUND`(404)、`INVENTORY_RESERVATION_INVALID_STATE`(409)。
