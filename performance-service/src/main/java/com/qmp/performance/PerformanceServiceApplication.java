@@ -3,11 +3,13 @@ package com.qmp.performance;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 演出/游船/游乐启动类（ADR-025，对应 docs/14 文档）。
  */
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("com.qmp.performance.mapper")
 public class PerformanceServiceApplication {
 

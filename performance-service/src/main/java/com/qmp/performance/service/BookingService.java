@@ -124,6 +124,29 @@ public class BookingService {
         bookingMapper.updateById(booking);
     }
 
+    /** 扫描当前租户下创建已超 {@code cutoff} 仍未支付的预订（供 PerformanceExpireBookingJob 调用）。 */
+    public List<PerformanceBooking> findExpiredPendingBookings(LocalDateTime cutoff) {
+        return bookingMapper.selectList(new LambdaQueryWrapper<PerformanceBooking>()
+                .eq(PerformanceBooking::getStatus, "PENDING_PAYMENT")
+                .lt(PerformanceBooking::getCreatedAt, cutoff));
+    }
+
+    /**
+     * 关闭一笔超时未支付预订：释放场次/座位预占（幂等）+ 置 CANCELLED。
+     * 重读校验状态 + @Version 乐观锁，防与支付成功并发误关。
+     */
+    @Transactional
+    public void cancelExpiredBooking(Long bookingId) {
+        PerformanceBooking booking = bookingMapper.selectById(bookingId);
+        if (booking == null || !"PENDING_PAYMENT".equals(booking.getStatus())) {
+            return; // 已支付/已取消，幂等跳过
+        }
+        releaseReservations(bookingId);
+        booking.setStatus("CANCELLED");
+        bookingMapper.updateById(booking);
+        log.info("预订单超时未支付，已关闭: bookingId={}", bookingId);
+    }
+
     /** 由 PaymentSucceeded 消费侧调用：确认预占并置预订单 CONFIRMED（幂等）。 */
     @Transactional
     public void confirmPaid(Long bookingId, String paymentId) {

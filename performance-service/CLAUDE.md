@@ -56,7 +56,9 @@ BOOKING_NOT_FOUND/INVALID_STATE、WRISTBAND_NOT_FOUND、INSUFFICIENT_WRISTBAND�
 3. **座位图模板** SeatMap/Seat 未单独建表，座位桶由后台直接按 seat_id 铺（座位图模板后续补）。
 4. **安全限制声明**（14 文档 1.3 SafetyDeclarationSnapshot）、**场次取消批量退款**（SessionCancelled）、
    **会员积分打通**（手牌消费→积分）未做。
-5. 预占超时释放任务未做（字段 `hold_expire_at` 已留）。
+5. 超时关单（已实现）：`PerformanceExpireBookingJob` 按 `performance.cancel-job` 配置（默认 60s）扫描创建
+   已超 `performance.reservation.hold-minutes`（默认 15min）仍 `PENDING_PAYMENT` 的预订，释放场次/座位预占
+   + 置 `CANCELLED`（幂等 + 乐观锁）。基于 `created_at` 判定。与门票 order / 酒店预订关单任务同构。
 
 ## 多租户调试
 
