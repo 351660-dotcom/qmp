@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -25,6 +26,15 @@ public class OrderDetailResponse {
 
     @JsonProperty("total_amount")
     private BigDecimal totalAmount;
+
+    @JsonProperty("paid_amount")
+    private BigDecimal paidAmount;
+
+    @JsonProperty("refund_amount")
+    private BigDecimal refundAmount;
+
+    @JsonProperty("pay_expire_at")
+    private Instant payExpireAt;
 
     private List<Item> items;
 

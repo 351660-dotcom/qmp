@@ -145,6 +145,11 @@ class TicketGoldenPathIT {
 
         // 订单：itemA 已核验 / itemB 已退票（非核验），未达「全部核验」，保持 PAID（见 order-service CLAUDE.md 决策 5）
         assertThat(orderStatus(orderId)).isEqualTo("PAID");
+
+        // 订单详情接口已暴露 paid_amount/refund_amount
+        JsonNode detail = get(ORDER_BASE + "/api/v1/orders/" + orderId);
+        assertThat(detail.get("paid_amount").asDouble()).isEqualTo(176.00);
+        assertThat(detail.get("refund_amount").asDouble()).isEqualTo(70.40);
     }
 
     // ------------------------------------------------------------------

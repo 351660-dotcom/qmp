@@ -195,6 +195,10 @@ public class OrderService {
                 .orderId(order.getOrderId())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
+                .paidAmount(order.getPaidAmount())
+                .refundAmount(order.getRefundAmount())
+                .payExpireAt(order.getPayExpireAt() != null
+                        ? order.getPayExpireAt().atZone(ZoneId.systemDefault()).toInstant() : null)
                 .items(items.stream().map(it -> OrderDetailResponse.Item.builder()
                         .orderItemId(it.getOrderItemId())
                         .skuId(it.getSkuId())
