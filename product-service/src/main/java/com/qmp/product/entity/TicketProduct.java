@@ -38,8 +38,11 @@ public class TicketProduct {
     /** NONE/ONE_TICKET_ONE_ID/ONE_ORDER_MULTI_PERSON */
     private String realNameRule;
 
-    /** 退改签规则快照 JSON（如 {"type":"TIERED","cutoff_hours":24,"refund_ratio":0.8}；NONE=不可退）。 */
+    /** 退改签规则快照 JSON（支持 {"supported":bool,"cutoff_hours":24,"fee_ratio":0.2}；兼容旧 type/refund_ratio）。 */
     private String refundPolicy;
+
+    /** 核销介质列表 JSON，如 ["QR_CODE","IC_CARD","FACE"]（核销规则之一，与 valid_period_rule 有效期并列）。 */
+    private String verificationMedium;
 
     @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;

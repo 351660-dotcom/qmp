@@ -203,13 +203,18 @@ public class CredentialService {
     // ------------------------------------------------------------------
 
     /**
-     * 可退窗口判断：{@code refund_policy_snapshot.type=NONE} 不可退；
-     * 否则若设置了 {@code cutoff_hours}，要求当前时间早于「游玩日 0 点 - cutoff_hours」。
+     * 可退窗口判断（退改签规则：是否支持退改 + 可退时间窗口）：
+     * {@code supported=false} 或 {@code type=NONE} 不可退；否则若设置了 {@code cutoff_hours}，
+     * 要求当前时间早于「游玩日 0 点 − cutoff_hours」。
      */
     private boolean isRefundWindowOpen(TicketCredential credential) {
         JsonNode policy = readPolicy(credential.getRefundPolicySnapshot());
         if (policy == null) {
             return true;
+        }
+        JsonNode supportedNode = policy.get("supported");
+        if (supportedNode != null && !supportedNode.asBoolean(true)) {
+            return false; // 明确不支持退改
         }
         JsonNode typeNode = policy.get("type");
         if (typeNode != null && "NONE".equalsIgnoreCase(typeNode.asText())) {
@@ -224,13 +229,21 @@ public class CredentialService {
         return LocalDateTime.now().isBefore(cutoff);
     }
 
-    /** 退款金额 = 单票价 × refund_ratio（默认 1.0），保留 2 位小数。 */
+    /**
+     * 退款金额 = 单票价 × 退款比例，保留 2 位小数。退款比例口径（优先级）：
+     * {@code fee_ratio}（手续费比例）→ 比例=1−fee_ratio；否则 {@code refund_ratio}；否则 1.0（全额退）。
+     */
     private BigDecimal computeRefundAmount(TicketCredential credential) {
         BigDecimal unitPrice = credential.getUnitPrice() != null ? credential.getUnitPrice() : BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.ONE;
         JsonNode policy = readPolicy(credential.getRefundPolicySnapshot());
-        if (policy != null && policy.has("refund_ratio")) {
+        if (policy != null && policy.has("fee_ratio")) {
+            ratio = BigDecimal.ONE.subtract(policy.get("fee_ratio").decimalValue());
+        } else if (policy != null && policy.has("refund_ratio")) {
             ratio = policy.get("refund_ratio").decimalValue();
+        }
+        if (ratio.signum() < 0) {
+            ratio = BigDecimal.ZERO;
         }
         return unitPrice.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
     }

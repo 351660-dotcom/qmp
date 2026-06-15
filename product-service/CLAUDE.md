@@ -20,9 +20,13 @@
 返回格式为 `com.qmp.kernel.common.ApiResponse`（`{code, message, data, trace_id}`）。
 SKU 查询返回含 `refund_policy`（产品级退改签规则快照），供 order 下单落 `order_item.refund_policy_snapshot`。
 
-> **退改签规则按产品配置**：`ticket_product.refund_policy`（JSON，V3 迁移新增）由后台
-> `POST /admin/v1/products` 的 `refund_policy` 字段设置（每景区可为不同产品设不同规则）。
-> 形如 `{"type":"TIERED","cutoff_hours":24,"refund_ratio":0.8}`，`NONE` 表示不可退。
+> **退改签规则按产品配置**：`ticket_product.refund_policy`（JSON，V3 迁移）由后台
+> `POST /admin/v1/products` 的 `refund_policy` 设置（每景区可为不同产品设不同规则）。结构对齐业务语义：
+> `{"supported":true/false(是否支持退改),"cutoff_hours":24(可退时间窗口),"fee_ratio":0.2(手续费比例)}`；
+> 退款额 = 单价 ×(1−fee_ratio)。兼容旧字段 `type=NONE`/`refund_ratio`。
+>
+> **核销规则**：有效期 `valid_period_rule` + 核销介质 `verification_medium`（JSON 数组，V4 迁移，
+> 如 `["QR_CODE","IC_CARD","FACE"]`），SKU 查询一并返回，供核验终端识别可用介质。
 
 ## 目录结构
 

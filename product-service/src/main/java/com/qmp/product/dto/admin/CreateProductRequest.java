@@ -28,9 +28,13 @@ public class CreateProductRequest {
     @JsonProperty("real_name_rule")
     private String realNameRule;
 
-    /** 可选，退改签规则 JSON，如 {"type":"TIERED","cutoff_hours":24,"refund_ratio":0.8}；NONE=不可退。 */
+    /** 可选，退改签规则 JSON：{"supported":bool,"cutoff_hours":24,"fee_ratio":0.2}（兼容旧 type/refund_ratio）。 */
     @JsonProperty("refund_policy")
     private JsonNode refundPolicy;
+
+    /** 可选，核销介质列表，如 ["QR_CODE","IC_CARD","FACE"]（核销规则之一）。 */
+    @JsonProperty("verification_medium")
+    private JsonNode verificationMedium;
 
     /** 可选，缺省 DRAFT。DRAFT/PENDING_REVIEW/ON_SALE/OFF_SALE。 */
     private String status;

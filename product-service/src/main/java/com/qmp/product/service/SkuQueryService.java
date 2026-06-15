@@ -46,12 +46,13 @@ public class SkuQueryService {
                 .ticketType(sku.getTicketType())
                 .realNameRule(product.getRealNameRule())
                 .refundPolicy(product.getRefundPolicy())
+                .verificationMedium(parseStringList(product.getVerificationMedium()))
                 .requiresTimeSlot(Boolean.TRUE.equals(sku.getRequiresTimeSlot()))
-                .timeSlotDefinitions(parseTimeSlots(sku.getTimeSlotDefinitions()))
+                .timeSlotDefinitions(parseStringList(sku.getTimeSlotDefinitions()))
                 .build();
     }
 
-    private List<String> parseTimeSlots(String json) {
+    private List<String> parseStringList(String json) {
         if (json == null || json.isBlank()) {
             return Collections.emptyList();
         }

@@ -39,6 +39,10 @@ public class SkuInfoResponse {
     @JsonProperty("refund_policy")
     private String refundPolicy;
 
+    /** 核销介质列表（核销规则之一），如 ["QR_CODE","IC_CARD","FACE"]。 */
+    @JsonProperty("verification_medium")
+    private List<String> verificationMedium;
+
     @JsonProperty("requires_time_slot")
     private Boolean requiresTimeSlot;
 

@@ -54,6 +54,8 @@ public class AdminProductService {
         product.setRealNameRule(request.getRealNameRule());
         product.setRefundPolicy(request.getRefundPolicy() != null
                 ? request.getRefundPolicy().toString() : null);
+        product.setVerificationMedium(request.getVerificationMedium() != null
+                ? request.getVerificationMedium().toString() : null);
         ticketProductMapper.insert(product);
         log.info("后台创建商品: productId={}, name={}", product.getProductId(), product.getName());
         return product.getProductId();
