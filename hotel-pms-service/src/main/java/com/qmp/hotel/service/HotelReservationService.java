@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -106,6 +107,28 @@ public class HotelReservationService {
         reservation.setStatus("CANCELLED");
         reservationMapper.updateById(reservation);
         log.info("取消预订单: reservationId={}", reservationId);
+    }
+
+    /** 扫描当前租户下创建已超 {@code cutoff} 仍未支付的预订（供 HotelExpireReservationJob 调用）。 */
+    public List<RoomReservation> findExpiredPendingReservations(LocalDateTime cutoff) {
+        return reservationMapper.selectList(new LambdaQueryWrapper<RoomReservation>()
+                .eq(RoomReservation::getStatus, "PENDING_PAYMENT")
+                .lt(RoomReservation::getCreatedAt, cutoff));
+    }
+
+    /**
+     * 关闭一笔超时未支付预订：释放连住各晚预占（幂等）+ 置 CANCELLED。
+     * 重读校验状态 + @Version 乐观锁，防与支付成功并发误关。
+     */
+    public void cancelExpiredReservation(Long reservationId) {
+        RoomReservation reservation = reservationMapper.selectById(reservationId);
+        if (reservation == null || !"PENDING_PAYMENT".equals(reservation.getStatus())) {
+            return; // 已支付/已取消，幂等跳过
+        }
+        hotelInventoryService.releaseStay(reservationId);
+        reservation.setStatus("CANCELLED");
+        reservationMapper.updateById(reservation);
+        log.info("预订单超时未支付，已关闭: reservationId={}", reservationId);
     }
 
     /** 由 PaymentSucceeded 消费侧调用：确认连住预占并置预订单 CONFIRMED（幂等）。 */

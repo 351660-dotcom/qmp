@@ -56,7 +56,10 @@ SQL 范式同门票 inventory_bucket）。高并发时可叠加 inventory-kernel
 2. **退款取消**：v1 仅未支付预订可取消（释放预占）；已支付的退款取消、取消政策（阶梯扣费）留待退款链路细化。
 3. **未实现（11 文档其余章节）**：排房 RoomUnit/房态机、客房部 Housekeeping、前台账务 Folio/入住/夜审/退房、
    协议单位、GuestProfile 单一客史、公安治安系统对接、团队订单。本期聚焦「房型 + 房晚库存 + 连住预订 + 支付确认」最小闭环。
-4. **超时释放**：未支付预订的间夜 HOLDING 超时释放任务 v1 未实现（字段 `hold_expire_at` 已留），同门票可补 `@Scheduled` 扫描。
+4. **超时关单**（已实现）：`HotelExpireReservationJob` 按 `hotel.cancel-job` 配置（默认 60s）扫描创建已超
+   `hotel.reservation.hold-minutes`（默认 30 分钟）仍 `PENDING_PAYMENT` 的预订，复用 `cancel()` 的释放逻辑
+   （`releaseStay` + 置 `CANCELLED`，幂等 + 乐观锁）。基于 `created_at` 判定，无需额外列。与门票 order 的
+   `CancelExpiredOrderJob` 同构。
 
 ## 多租户调试
 

@@ -27,6 +27,10 @@ rocketmq:
 hotel:
   reservation:
     hold-minutes: 30
+  # 超时关单任务：扫描创建已超 hold-minutes 仍 PENDING_PAYMENT 的预订，释放预占并置 CANCELLED
+  cancel-job:
+    fixed-delay-ms: ${HOTEL_CANCEL_JOB_FIXED_DELAY_MS:60000}
+    tenant-ids: ${HOTEL_CANCEL_JOB_TENANT_IDS:1001}
   client:
     payment-base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
 

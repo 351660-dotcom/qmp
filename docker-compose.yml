@@ -275,6 +275,8 @@ services:
       ADMIN_API_TOKEN: scenic-admin-dev-token
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       PAYMENT_BASE_URL: http://payment-service:8085
+      # 本地/测试栈缩短超时关单扫描间隔（生产默认 60s）
+      HOTEL_CANCEL_JOB_FIXED_DELAY_MS: "5000"
     ports:
       - "8088:8088"
     healthcheck:
