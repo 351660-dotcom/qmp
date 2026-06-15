@@ -118,7 +118,10 @@ public class OrderService {
             item.setQuantity(reqItem.getQuantity());
             item.setUnitPrice(unitPrice);
             item.setSubtotal(subtotal);
-            item.setRefundPolicySnapshot(DEFAULT_REFUND_POLICY);
+            // 退改签规则按产品配置取真实快照（后台每景区可为不同产品设置）；未配置则回落默认
+            item.setRefundPolicySnapshot(
+                    (sku.getRefundPolicy() != null && !sku.getRefundPolicy().isBlank())
+                            ? sku.getRefundPolicy() : DEFAULT_REFUND_POLICY);
             item.setVerifiedCount(0);
             items.add(item);
         }

@@ -45,6 +45,7 @@ public class SkuQueryService {
                 .status(product.getStatus())
                 .ticketType(sku.getTicketType())
                 .realNameRule(product.getRealNameRule())
+                .refundPolicy(product.getRefundPolicy())
                 .requiresTimeSlot(Boolean.TRUE.equals(sku.getRequiresTimeSlot()))
                 .timeSlotDefinitions(parseTimeSlots(sku.getTimeSlotDefinitions()))
                 .build();

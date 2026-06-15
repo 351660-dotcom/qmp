@@ -54,9 +54,9 @@ member.GetMemberStatus → 逐 item: product.GetSku（校验 ON_SALE）→ prici
    ticket-verification-service，ADR-005），用每明细已核销计数表达核销进度。
    订单详情据此返回 `quantity`/`verified_count` 聚合，而非 09 示例的逐张 `credentials[]`。
    后续如需逐张明细，应由 ticket-verification 增「按 order 查凭证」接口，order 透传，而非自存凭证。
-3. **退改规则快照占位**：v1 无独立退改策略服务，创建订单时统一写默认
-   `{type:TIERED, cutoff_hours:24, refund_ratio:0.8}`（与 09 文档示例一致）到 `order_item.refund_policy_snapshot`，
-   出票时透传给凭证。接入商品/营销退改配置后改为按 sku 取真实快照。
+3. **退改规则快照取自产品配置**：创建订单时从 `product.getSku()` 的 `refund_policy`（产品级配置，
+   后台每景区可为不同产品设置）落到 `order_item.refund_policy_snapshot`，出票时透传给凭证；
+   产品未配置时回落默认 `{type:TIERED, cutoff_hours:24, refund_ratio:0.8}`。（早期为硬编码占位，现已接产品配置。）
 4. **单商户购物车**：v1 以 item 的 scenic_id/merchant_id 落 `trade_order`（黄金路径同景区同商户）；
    跨商户购物车需拆分子订单 + 多支付单（08/10 文档已注明 payment 1:1 约束待放开）。
 5. **消费 `RefundSucceeded` 累加 `refund_amount`**：order-service 以 `order-service-refund-consumer`

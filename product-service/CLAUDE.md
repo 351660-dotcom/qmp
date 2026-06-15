@@ -18,6 +18,11 @@
 | GET | `/api/v1/skus/{sku_id}` | 查询票种信息：状态、票种类型、是否需要场次、实名制规则 |
 
 返回格式为 `com.qmp.kernel.common.ApiResponse`（`{code, message, data, trace_id}`）。
+SKU 查询返回含 `refund_policy`（产品级退改签规则快照），供 order 下单落 `order_item.refund_policy_snapshot`。
+
+> **退改签规则按产品配置**：`ticket_product.refund_policy`（JSON，V3 迁移新增）由后台
+> `POST /admin/v1/products` 的 `refund_policy` 字段设置（每景区可为不同产品设不同规则）。
+> 形如 `{"type":"TIERED","cutoff_hours":24,"refund_ratio":0.8}`，`NONE` 表示不可退。
 
 ## 目录结构
 

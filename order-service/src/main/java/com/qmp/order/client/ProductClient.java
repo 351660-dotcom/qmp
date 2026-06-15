@@ -36,6 +36,9 @@ public class ProductClient {
         private Long scenicId;
         @JsonProperty("merchant_id")
         private Long merchantId;
+        /** 退改签规则快照（产品配置），order 下单透传到 order_item.refund_policy_snapshot。 */
+        @JsonProperty("refund_policy")
+        private String refundPolicy;
     }
 
     public SkuView getSku(Long skuId) {

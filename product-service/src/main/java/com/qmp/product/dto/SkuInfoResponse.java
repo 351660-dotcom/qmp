@@ -35,6 +35,10 @@ public class SkuInfoResponse {
     @JsonProperty("real_name_rule")
     private String realNameRule;
 
+    /** 退改签规则快照（来自 ticket_product，供 order 下单落 order_item.refund_policy_snapshot）。 */
+    @JsonProperty("refund_policy")
+    private String refundPolicy;
+
     @JsonProperty("requires_time_slot")
     private Boolean requiresTimeSlot;
 

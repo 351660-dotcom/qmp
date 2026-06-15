@@ -38,6 +38,9 @@ public class TicketProduct {
     /** NONE/ONE_TICKET_ONE_ID/ONE_ORDER_MULTI_PERSON */
     private String realNameRule;
 
+    /** 退改签规则快照 JSON（如 {"type":"TIERED","cutoff_hours":24,"refund_ratio":0.8}；NONE=不可退）。 */
+    private String refundPolicy;
+
     @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
     private LocalDateTime createdAt;
 
