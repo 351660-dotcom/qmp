@@ -100,6 +100,8 @@ public class AdminProductService {
                         .merchantId(p.getMerchantId())
                         .status(p.getStatus())
                         .realNameRule(p.getRealNameRule())
+                        .refundPolicy(p.getRefundPolicy())
+                        .verificationMedium(p.getVerificationMedium())
                         .build())
                 .toList();
     }

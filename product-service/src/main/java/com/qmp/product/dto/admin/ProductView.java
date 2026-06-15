@@ -26,4 +26,12 @@ public class ProductView {
 
     @JsonProperty("real_name_rule")
     private String realNameRule;
+
+    /** 退改签规则快照 JSON。 */
+    @JsonProperty("refund_policy")
+    private String refundPolicy;
+
+    /** 核销介质列表 JSON，如 ["QR_CODE","IC_CARD","FACE"]。 */
+    @JsonProperty("verification_medium")
+    private String verificationMedium;
 }
