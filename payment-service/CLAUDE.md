@@ -45,8 +45,10 @@
 1. **退款同步完成**：`createRefund` 在本次请求内直接写 `refund_record.status=SUCCEEDED`
    并发布 `RefundSucceeded`，不经过异步渠道回调（09 文档六的响应示例 `status: PENDING`
    是真实异步渠道下的中间态；v1 无真实渠道，故省略该中间态）。
-2. **分账金额占位**：08/13 文档未定义平台抽成比例，`settlement_record` 暂记
-   `platform_amount=0`、`merchant_amount=全额`、`status=SETTLED`。接入真实分账规则后需重算。
+2. **分账按商户抽成配置**：`merchant_commission`（V2 迁移）按商户存平台抽成比例（每商户可不同，
+   如零售业态下挂多商户各设各的），后台 `PUT /admin/v1/merchant-commissions` 维护。
+   `createSettlementRecord` 据此算 `platform_amount = amount×rate`（HALF_UP 2 位）、
+   `merchant_amount = amount−platform_amount`；商户未配置按 0（全额归商户，兼容历史）。`status=SETTLED`（v1 即时清算）。
 3. **`payment_id` 生成规则**：`PAY-{yyyyMMdd}-{order_id 补零至6位}`，与 09 文档示例
    `PAY-20260701-005001`（对应 `order_id=5001`）一致。
 

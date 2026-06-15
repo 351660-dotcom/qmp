@@ -10,12 +10,14 @@ import com.qmp.payment.dto.PaymentResponse;
 import com.qmp.payment.dto.RefundResponse;
 import com.qmp.payment.entity.PaymentOrder;
 import com.qmp.payment.entity.RefundRecord;
+import com.qmp.payment.entity.MerchantCommission;
 import com.qmp.payment.entity.SettlementRecord;
 import com.qmp.payment.error.PaymentErrorCode;
 import com.qmp.payment.event.PaymentSucceededPayload;
 import com.qmp.payment.event.RefundSucceededPayload;
 import com.qmp.payment.mapper.PaymentOrderMapper;
 import com.qmp.payment.mapper.RefundRecordMapper;
+import com.qmp.payment.mapper.MerchantCommissionMapper;
 import com.qmp.payment.mapper.SettlementRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +47,7 @@ public class PaymentService {
     private final PaymentOrderMapper paymentOrderMapper;
     private final SettlementRecordMapper settlementRecordMapper;
     private final RefundRecordMapper refundRecordMapper;
+    private final MerchantCommissionMapper merchantCommissionMapper;
     private final RocketMQTemplate rocketMQTemplate;
 
     @Transactional
@@ -143,18 +147,46 @@ public class PaymentService {
     }
 
     /**
-     * v1 占位分账：平台抽成比例未在 08/13 文档中定义，先记 100% 归商户、平台分账金额为 0，
-     * 状态置为 SETTLED（mock）。后续接入真实分账规则时按 {@code merchant_amount}/{@code platform_amount} 重算。
+     * 分账：按商户配置的抽成比例（{@code merchant_commission}）计算平台/商户金额。
+     * platform_amount = amount × rate（四舍五入 2 位），merchant_amount = amount − platform_amount；
+     * 商户未配置比例时按 0 处理（全额归商户），与历史占位行为兼容。状态置 SETTLED（v1 mock 即时清算）。
      */
     private void createSettlementRecord(PaymentOrder paymentOrder) {
+        BigDecimal rate = commissionRate(paymentOrder.getMerchantId());
+        BigDecimal platformAmount = paymentOrder.getAmount()
+                .multiply(rate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal merchantAmount = paymentOrder.getAmount().subtract(platformAmount);
+
         SettlementRecord settlement = new SettlementRecord();
         settlement.setTenantId(paymentOrder.getTenantId());
         settlement.setPaymentId(paymentOrder.getPaymentId());
         settlement.setMerchantId(paymentOrder.getMerchantId());
-        settlement.setPlatformAmount(BigDecimal.ZERO);
-        settlement.setMerchantAmount(paymentOrder.getAmount());
+        settlement.setPlatformAmount(platformAmount);
+        settlement.setMerchantAmount(merchantAmount);
         settlement.setStatus("SETTLED");
         settlementRecordMapper.insert(settlement);
+    }
+
+    /** 取商户抽成比例；未配置返回 0。 */
+    private BigDecimal commissionRate(Long merchantId) {
+        MerchantCommission cfg = merchantCommissionMapper.selectById(merchantId);
+        return (cfg != null && cfg.getCommissionRate() != null) ? cfg.getCommissionRate() : BigDecimal.ZERO;
+    }
+
+    /** 后台 upsert 商户抽成比例（0..1）。 */
+    @Transactional
+    public void upsertCommission(Long merchantId, BigDecimal rate) {
+        MerchantCommission existing = merchantCommissionMapper.selectById(merchantId);
+        if (existing == null) {
+            MerchantCommission cfg = new MerchantCommission();
+            cfg.setMerchantId(merchantId);
+            cfg.setTenantId(TenantContext.get());
+            cfg.setCommissionRate(rate);
+            merchantCommissionMapper.insert(cfg);
+        } else {
+            existing.setCommissionRate(rate);
+            merchantCommissionMapper.updateById(existing);
+        }
     }
 
     private void publishPaymentSucceeded(PaymentOrder paymentOrder, LocalDateTime paidAt) {
